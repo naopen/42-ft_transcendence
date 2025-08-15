@@ -1,6 +1,6 @@
 # ignore directories
 secrets
-database
+data
 
 # ignore files
 .env
