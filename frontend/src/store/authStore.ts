@@ -17,6 +17,7 @@ interface AuthState {
   checkAuth: () => Promise<boolean>;
   logout: () => Promise<void>;
   updateLocale: (locale: string) => Promise<void>;
+  setLoading: (loading: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -76,5 +77,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       console.error('Update locale error:', error);
     }
+  },
+
+  setLoading: (loading: boolean) => {
+    set({ loading });
   },
 }));

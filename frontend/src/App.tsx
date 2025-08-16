@@ -11,12 +11,12 @@ import Profile from './pages/Profile';
 import Stats from './pages/Stats';
 
 function AppContent() {
-  const { isAuthenticated, checkAuth, loading } = useAuthStore();
+  const { isAuthenticated, checkAuth, loading, setLoading } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Handle OAuth callback parameters
   useEffect(() => {
-    // Handle OAuth callback
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get('token');
     const redirect = urlParams.get('redirect');
@@ -26,7 +26,6 @@ function AppContent() {
       // Clear URL parameters and show error
       window.history.replaceState({}, document.title, location.pathname);
       console.error('Authentication error:', error);
-      // Optionally show user-friendly error message
       return;
     }
 
@@ -45,11 +44,22 @@ function AppContent() {
           }
         }
       });
-    } else {
-      // Check authentication status on app load
-      checkAuth();
     }
-  }, [checkAuth, navigate, location]);
+  }, [location.search, checkAuth, navigate]);
+
+  // Initial authentication check (only run once)
+  useEffect(() => {
+    // Skip auth check if we're on the login page or if we have a token in URL
+    const urlParams = new URLSearchParams(location.search);
+    const hasToken = urlParams.get('token');
+    
+    if (location.pathname !== '/login' && !hasToken) {
+      checkAuth();
+    } else if (location.pathname === '/login') {
+      // Set loading to false for login page
+      setLoading(false);
+    }
+  }, [checkAuth, setLoading]); // Run only once on mount
 
   // Show loading spinner while checking authentication
   if (loading) {
