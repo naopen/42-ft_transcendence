@@ -1,6 +1,16 @@
 import { Server, Socket } from 'socket.io';
 import { db } from '../database/init';
 
+interface GameData {
+  id: number;
+  player1_id: number;
+  player2_id: number;
+  player1_username: string;
+  player2_username: string;
+  status: string;
+  started_at?: string;
+}
+
 interface GameState {
   gameId: number;
   player1: {
@@ -47,7 +57,7 @@ export function setupGameSocket(io: Server) {
       const { userId } = data;
       playerSockets.set(userId, socket.id);
       socket.data.userId = userId;
-      
+
       console.log(`Player ${userId} authenticated with socket ${socket.id}`);
     });
 
@@ -55,7 +65,7 @@ export function setupGameSocket(io: Server) {
     socket.on('join-game', async (data: { gameId: number }) => {
       const { gameId } = data;
       const userId = socket.data.userId;
-      
+
       if (!userId) {
         socket.emit('error', { message: 'Not authenticated' });
         return;
@@ -63,14 +73,14 @@ export function setupGameSocket(io: Server) {
 
       // Get game from database
       const gameData = db.prepare(`
-        SELECT g.*, 
+        SELECT g.*,
                p1.username as player1_username,
                p2.username as player2_username
         FROM games g
         LEFT JOIN users p1 ON g.player1_id = p1.id
         LEFT JOIN users p2 ON g.player2_id = p2.id
         WHERE g.id = ?
-      `).get(gameId);
+      `).get(gameId) as GameData | undefined;
 
       if (!gameData) {
         socket.emit('error', { message: 'Game not found' });
@@ -85,7 +95,7 @@ export function setupGameSocket(io: Server) {
       } else {
         // User is a player
         socket.join(`game-${gameId}`);
-        
+
         // Initialize or get game state
         if (!games.has(gameId)) {
           games.set(gameId, {
@@ -108,24 +118,24 @@ export function setupGameSocket(io: Server) {
         }
 
         const gameState = games.get(gameId)!;
-        
+
         // Check if both players are connected
         const player1Socket = playerSockets.get(gameData.player1_id);
         const player2Socket = playerSockets.get(gameData.player2_id);
-        
+
         if (player1Socket && player2Socket && gameState.status === 'waiting') {
           gameState.status = 'ready';
-          
+
           // Update database
           db.prepare(`
-            UPDATE games 
-            SET status = 'ready', started_at = CURRENT_TIMESTAMP 
+            UPDATE games
+            SET status = 'ready', started_at = CURRENT_TIMESTAMP
             WHERE id = ?
           `).run(gameId);
-          
+
           // Notify both players
           io.to(`game-${gameId}`).emit('game-ready', gameState);
-          
+
           // Start game after 3 seconds countdown
           setTimeout(() => {
             if (gameState.status === 'ready') {
@@ -134,7 +144,7 @@ export function setupGameSocket(io: Server) {
             }
           }, 3000);
         }
-        
+
         socket.emit('game-joined', gameState);
       }
     });
@@ -143,20 +153,20 @@ export function setupGameSocket(io: Server) {
     socket.on('move-paddle', (data: { gameId: number; direction: 'up' | 'down' }) => {
       const { gameId, direction } = data;
       const userId = socket.data.userId;
-      
+
       const gameState = games.get(gameId);
       if (!gameState || gameState.status !== 'playing') return;
-      
+
       const isPlayer1 = gameState.player1.id === userId;
       const player = isPlayer1 ? gameState.player1 : gameState.player2;
-      
+
       // Update paddle position
       if (direction === 'up') {
         player.position = Math.max(PADDLE_HEIGHT / 2, player.position - PADDLE_SPEED);
       } else {
         player.position = Math.min(GAME_HEIGHT - PADDLE_HEIGHT / 2, player.position + PADDLE_SPEED);
       }
-      
+
       // Broadcast paddle position
       io.to(`game-${gameId}`).emit('paddle-moved', {
         playerId: userId,
@@ -168,7 +178,7 @@ export function setupGameSocket(io: Server) {
     socket.on('pause-game', (data: { gameId: number }) => {
       const { gameId } = data;
       const gameState = games.get(gameId);
-      
+
       if (gameState && gameState.status === 'playing') {
         gameState.status = 'paused';
         io.to(`game-${gameId}`).emit('game-paused');
@@ -178,7 +188,7 @@ export function setupGameSocket(io: Server) {
     socket.on('resume-game', (data: { gameId: number }) => {
       const { gameId } = data;
       const gameState = games.get(gameId);
-      
+
       if (gameState && gameState.status === 'paused') {
         gameState.status = 'playing';
         io.to(`game-${gameId}`).emit('game-resumed');
@@ -190,22 +200,22 @@ export function setupGameSocket(io: Server) {
       const userId = socket.data.userId;
       if (userId) {
         playerSockets.delete(userId);
-        
+
         // Check if player was in a game
         games.forEach((gameState, gameId) => {
           if (gameState.player1.id === userId || gameState.player2.id === userId) {
             if (gameState.status === 'playing') {
               gameState.status = 'paused';
               io.to(`game-${gameId}`).emit('player-disconnected', { userId });
-              
+
               // Give player 30 seconds to reconnect
               setTimeout(() => {
                 if (!playerSockets.has(userId) && gameState.status === 'paused') {
                   // Player didn't reconnect, forfeit the game
-                  const winnerId = gameState.player1.id === userId 
-                    ? gameState.player2.id 
+                  const winnerId = gameState.player1.id === userId
+                    ? gameState.player2.id
                     : gameState.player1.id;
-                  
+
                   endGame(io, gameId, winnerId);
                 }
               }, 30000);
@@ -243,7 +253,7 @@ function startGameLoop(io: Server, gameId: number) {
     gameState.ball.y += gameState.ball.velocityY;
 
     // Ball collision with top/bottom walls
-    if (gameState.ball.y - BALL_SIZE / 2 <= 0 || 
+    if (gameState.ball.y - BALL_SIZE / 2 <= 0 ||
         gameState.ball.y + BALL_SIZE / 2 >= GAME_HEIGHT) {
       gameState.ball.velocityY = -gameState.ball.velocityY;
     }
@@ -261,13 +271,13 @@ function startGameLoop(io: Server, gameId: number) {
           player1Score: gameState.player1.score,
           player2Score: gameState.player2.score
         });
-        
+
         if (gameState.player2.score >= WINNING_SCORE) {
           endGame(io, gameId, gameState.player2.id);
           clearInterval(gameInterval);
           return;
         }
-        
+
         gameState.ball = resetBall();
       }
     }
@@ -284,13 +294,13 @@ function startGameLoop(io: Server, gameId: number) {
           player1Score: gameState.player1.score,
           player2Score: gameState.player2.score
         });
-        
+
         if (gameState.player1.score >= WINNING_SCORE) {
           endGame(io, gameId, gameState.player1.id);
           clearInterval(gameInterval);
           return;
         }
-        
+
         gameState.ball = resetBall();
       }
     }
@@ -301,7 +311,7 @@ function startGameLoop(io: Server, gameId: number) {
       player1Position: gameState.player1.position,
       player2Position: gameState.player2.position
     });
-    
+
     // Also emit to spectators
     io.to(`game-${gameId}-spectators`).emit('game-update', {
       ball: gameState.ball,
@@ -323,18 +333,18 @@ function endGame(io: Server, gameId: number, winnerId: number) {
 
   // Update database
   const endTime = new Date();
-  const startTime = db.prepare('SELECT started_at FROM games WHERE id = ?').get(gameId);
+  const startTime = db.prepare('SELECT started_at FROM games WHERE id = ?').get(gameId) as { started_at: string } | undefined;
   const duration = startTime ? Math.floor((endTime.getTime() - new Date(startTime.started_at).getTime()) / 1000) : 0;
 
   db.prepare(`
-    UPDATE games 
-    SET player1_score = ?, player2_score = ?, winner_id = ?, 
+    UPDATE games
+    SET player1_score = ?, player2_score = ?, winner_id = ?,
         status = 'completed', ended_at = CURRENT_TIMESTAMP, duration = ?
     WHERE id = ?
   `).run(
-    gameState.player1.score, 
-    gameState.player2.score, 
-    winnerId, 
+    gameState.player1.score,
+    gameState.player2.score,
+    winnerId,
     duration,
     gameId
   );
@@ -350,7 +360,7 @@ function endGame(io: Server, gameId: number, winnerId: number) {
     player2Score: gameState.player2.score,
     duration
   });
-  
+
   io.to(`game-${gameId}-spectators`).emit('game-ended', {
     winnerId,
     player1Score: gameState.player1.score,
@@ -363,14 +373,15 @@ function endGame(io: Server, gameId: number, winnerId: number) {
 }
 
 function updateUserStats(userId: number, won: boolean, scored: number, conceded: number) {
-  const currentStats = db.prepare('SELECT * FROM user_stats WHERE user_id = ?').get(userId);
-  
+  const currentStats = db.prepare('SELECT * FROM user_stats WHERE user_id = ?').get(userId) as {
+    win_streak: number;
+    best_win_streak: number;
+  } | undefined;
+
   if (currentStats) {
     const newWinStreak = won ? currentStats.win_streak + 1 : 0;
-    const bestWinStreak = Math.max(currentStats.best_win_streak, newWinStreak);
-    
-    db.prepare(`
-      UPDATE user_stats 
+    const bestWinStreak = Math.max(currentStats.best_win_streak, newWinStreak);    db.prepare(`
+      UPDATE user_stats
       SET games_played = games_played + 1,
           games_won = games_won + ?,
           games_lost = games_lost + ?,

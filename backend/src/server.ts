@@ -17,14 +17,7 @@ dotenv.config();
 
 const server = Fastify({
   logger: {
-    level: 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        translateTime: 'HH:MM:ss Z',
-        ignore: 'pid,hostname'
-      }
-    }
+    level: 'info'
   }
 });
 
@@ -33,15 +26,15 @@ async function initializeApp() {
   try {
     // Setup database
     await initDatabase();
-    
+
     // Register plugins
     await server.register(cors, {
       origin: process.env.FRONTEND_URL || 'http://localhost:5173',
       credentials: true
     });
-    
+
     await server.register(cookie);
-    
+
     await server.register(session, {
       secret: process.env.SESSION_SECRET || 'a-very-long-secret-key-that-should-be-changed',
       cookie: {
@@ -50,9 +43,9 @@ async function initializeApp() {
         maxAge: 86400000 // 1 day
       }
     });
-    
+
     await server.register(websocket);
-    
+
     // Setup Socket.IO
     const io = new Server(server.server, {
       cors: {
@@ -60,30 +53,30 @@ async function initializeApp() {
         credentials: true
       }
     });
-    
+
     // Setup game socket handlers
     setupGameSocket(io);
-    
+
     // Register routes
     await server.register(authRoutes, { prefix: '/api/auth' });
     await server.register(userRoutes, { prefix: '/api/users' });
     await server.register(gameRoutes, { prefix: '/api/games' });
     await server.register(statsRoutes, { prefix: '/api/stats' });
-    
+
     // Health check endpoint
     server.get('/health', async () => {
       return { status: 'ok', timestamp: new Date().toISOString() };
     });
-    
+
     // Start server
     const port = parseInt(process.env.PORT || '3000', 10);
     const host = process.env.HOST || '0.0.0.0';
-    
+
     await server.listen({ port, host });
-    
+
     console.log(`🚀 Server running at http://${host}:${port}`);
     console.log(`📊 Health check: http://${host}:${port}/health`);
-    
+
   } catch (err) {
     server.log.error(err);
     process.exit(1);
