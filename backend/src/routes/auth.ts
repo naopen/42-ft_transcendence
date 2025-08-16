@@ -126,11 +126,11 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
           sameSite: 'lax',
           maxAge: 86400 // 1 day
         })
-        .redirect(`${process.env.FRONTEND_URL}?token=${jwtToken}`);
+        .redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}?token=${jwtToken}&redirect=game`);
 
     } catch (error) {
       fastify.log.error(error);
-      reply.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+      reply.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed`);
     }
   });
 

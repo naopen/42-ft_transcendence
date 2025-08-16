@@ -14,7 +14,7 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;
-  checkAuth: () => Promise<void>;
+  checkAuth: () => Promise<boolean>;
   logout: () => Promise<void>;
   updateLocale: (locale: string) => Promise<void>;
 }
@@ -33,19 +33,23 @@ export const useAuthStore = create<AuthState>((set) => ({
           user: response.data.user,
           loading: false,
         });
+        return true;
       } else {
         set({
           isAuthenticated: false,
           user: null,
           loading: false,
         });
+        return false;
       }
     } catch (error) {
+      console.error('Auth check error:', error);
       set({
         isAuthenticated: false,
         user: null,
         loading: false,
       });
+      return false;
     }
   },
 
