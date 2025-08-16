@@ -32,6 +32,12 @@ interface Session {
   locale: string;
 }
 
+interface JwtPayload {
+  userId: number;
+  sessionId: string;
+  email: string;
+}
+
 const authRoutes: FastifyPluginAsync = async (fastify) => {
   // Register JWT plugin
   await fastify.register(jwt, {
@@ -149,36 +155,77 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Verify session endpoint
   fastify.get('/verify', async (request, reply) => {
-    const sessionId = request.cookies.session;
-
-    if (!sessionId) {
-      reply.code(401);
-      return { authenticated: false };
-    }
-
-    const session = db.prepare(`
-      SELECT s.*, u.*
-      FROM sessions s
-      JOIN users u ON s.user_id = u.id
-      WHERE s.id = ? AND s.expires_at > datetime('now')
-    `).get(sessionId) as Session | undefined;
-
-    if (!session) {
-      reply.code(401);
-      return { authenticated: false };
-    }
-
-    return {
-      authenticated: true,
-      user: {
-        id: session.user_id,
-        email: session.email,
-        username: session.username,
-        displayName: session.display_name,
-        avatarUrl: session.avatar_url,
-        locale: session.locale
+    try {
+      // Check for JWT token in Authorization header first
+      const authHeader = request.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        try {
+          const decoded = fastify.jwt.verify(token) as JwtPayload;
+          
+          // Get user from database
+          const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as User | undefined;
+          
+          if (user) {
+            return {
+              authenticated: true,
+              user: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                displayName: user.display_name,
+                avatarUrl: user.avatar_url,
+                locale: user.locale
+              }
+            };
+          }
+        } catch (jwtError) {
+          // JWT verification failed, fall back to session check
+        }
       }
-    };
+
+      // Fall back to session cookie check
+      const sessionId = request.cookies.session;
+
+      if (!sessionId) {
+        reply.code(401);
+        return { authenticated: false };
+      }
+
+      const session = db.prepare(`
+        SELECT 
+          s.user_id,
+          u.email,
+          u.username,
+          u.display_name,
+          u.avatar_url,
+          u.locale
+        FROM sessions s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.id = ? AND s.expires_at > datetime('now')
+      `).get(sessionId) as Session | undefined;
+
+      if (!session) {
+        reply.code(401);
+        return { authenticated: false };
+      }
+
+      return {
+        authenticated: true,
+        user: {
+          id: session.user_id,
+          email: session.email,
+          username: session.username,
+          displayName: session.display_name,
+          avatarUrl: session.avatar_url,
+          locale: session.locale
+        }
+      };
+    } catch (error) {
+      console.error('Verify endpoint error:', error);
+      reply.code(401);
+      return { authenticated: false };
+    }
   });
 };
 
