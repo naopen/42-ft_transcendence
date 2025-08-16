@@ -1,39 +1,14 @@
 import { FastifyPluginAsync } from 'fastify';
 import { db } from '../database/init';
+import { authenticateUser } from '../middleware/auth';
 
 interface UserParams {
   id: string;
 }
 
-interface Session {
-  id: string;
-  user_id: number;
-  expires_at: string;
-}
-
 const userRoutes: FastifyPluginAsync = async (fastify) => {
-  // Middleware to check authentication
-  fastify.addHook('preHandler', async (request, reply) => {
-    const sessionId = request.cookies.session;
-
-    if (!sessionId) {
-      reply.code(401).send({ error: 'Unauthorized' });
-      return;
-    }
-
-    const session = db.prepare(`
-      SELECT * FROM sessions
-      WHERE id = ? AND expires_at > datetime('now')
-    `).get(sessionId) as Session | undefined;
-
-    if (!session) {
-      reply.code(401).send({ error: 'Session expired' });
-      return;
-    }
-
-    // Attach user to request
-    (request as any).userId = session.user_id;
-  });
+  // Middleware to check authentication using common auth middleware
+  fastify.addHook('preHandler', authenticateUser);
 
   // Get current user profile
   fastify.get('/me', async (request) => {

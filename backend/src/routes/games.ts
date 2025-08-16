@@ -1,11 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { db } from '../database/init';
-
-interface Session {
-  id: string;
-  user_id: number;
-  expires_at: string;
-}
+import { authenticateUser } from '../middleware/auth';
 
 interface Game {
   id: number;
@@ -25,26 +20,9 @@ interface TournamentMatch {
 }
 
 const gameRoutes: FastifyPluginAsync = async (fastify) => {
-  // Create a new game (matchmaking)
-  fastify.post('/match', async (request, reply) => {
-    const sessionId = request.cookies.session;
-
-    if (!sessionId) {
-      reply.code(401).send({ error: 'Unauthorized' });
-      return;
-    }
-
-    const session = db.prepare(`
-      SELECT * FROM sessions
-      WHERE id = ? AND expires_at > datetime('now')
-    `).get(sessionId) as Session | undefined;
-
-    if (!session) {
-      reply.code(401).send({ error: 'Session expired' });
-      return;
-    }
-
-    const userId = session.user_id;
+  // Create a new game (matchmaking) - requires authentication
+  fastify.post('/match', { preHandler: authenticateUser }, async (request) => {
+    const userId = (request as any).userId;
 
         // Check if user is already in a pending game
     const pendingGame = db.prepare(`
