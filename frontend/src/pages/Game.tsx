@@ -17,6 +17,7 @@ function Game() {
   const gameStore = useGameStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [localMode, setLocalMode] = useState(false); // Add local mode for testing
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
@@ -130,11 +131,25 @@ function Game() {
   // Show matchmaking if no game ID
   if (!id) {
     return (
-      <GameMatchmaking 
-        onStartMatchmaking={handleMatchmaking}
-        loading={loading}
-        error={error}
-      />
+      <div className="space-y-6">
+        <GameMatchmaking 
+          onStartMatchmaking={handleMatchmaking}
+          loading={loading}
+          error={error}
+        />
+        {/* Local test mode button */}
+        <div className="text-center">
+          <button
+            onClick={() => {
+              setLocalMode(true);
+              navigate('/game/local');
+            }}
+            className="btn-secondary"
+          >
+            {t('playLocal') || 'Play Local (Test Mode)'}
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -202,18 +217,20 @@ function Game() {
   }
 
   // Show the game
+  const isLocalMode = id === 'local';
+  
   return (
     <div className="space-y-6">
       {/* Game Header */}
       <div className="bg-42-gray rounded-lg p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="text-center">
-            <p className="text-sm text-gray-400">{gameStore.player1?.username}</p>
+            <p className="text-sm text-gray-400">{isLocalMode ? 'Player 1' : gameStore.player1?.username}</p>
             <p className="text-2xl font-bold text-white">{gameStore.player1?.score || 0}</p>
           </div>
           <span className="text-gray-500 text-xl">VS</span>
           <div className="text-center">
-            <p className="text-sm text-gray-400">{gameStore.player2?.username}</p>
+            <p className="text-sm text-gray-400">{isLocalMode ? 'Player 2 (AI)' : gameStore.player2?.username}</p>
             <p className="text-2xl font-bold text-white">{gameStore.player2?.score || 0}</p>
           </div>
         </div>
@@ -221,6 +238,12 @@ function Game() {
         {gameStore.status === 'paused' && (
           <div className="text-yellow-500 animate-pulse">
             <span>{t('reconnecting')}</span>
+          </div>
+        )}
+        
+        {isLocalMode && (
+          <div className="text-42-primary">
+            <span>Local Mode</span>
           </div>
         )}
       </div>
