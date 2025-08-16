@@ -49,8 +49,17 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       },
       auth: oauthPlugin.GOOGLE_CONFIGURATION
     },
-    startRedirectPath: '/api/auth/google',
     callbackUri: `${process.env.BACKEND_URL}/api/auth/google/callback`
+  });
+
+  // Google OAuth login - redirect to Google
+  fastify.get('/google', async function (request, reply) {
+    const authorizationUri = await (fastify as any).googleOAuth2.generateAuthorizationUri(request, reply);
+    // If the plugin doesn't automatically redirect, manually redirect
+    if (typeof authorizationUri === 'string') {
+      return reply.redirect(authorizationUri);
+    }
+    return authorizationUri;
   });
 
   // Google OAuth login
