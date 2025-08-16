@@ -1,6 +1,27 @@
 import { FastifyPluginAsync } from 'fastify';
 import { db } from '../database/init';
-import { authenticateUser } from '../middleware/auth';
+
+interface JwtPayload {
+  userId: number;
+  sessionId: string;
+  email: string;
+}
+
+interface User {
+  id: number;
+  google_id: string;
+  email: string;
+  username: string;
+  display_name: string;
+  avatar_url: string;
+  locale: string;
+}
+
+interface Session {
+  id: string;
+  user_id: number;
+  expires_at: string;
+}
 
 interface Game {
   id: number;
@@ -20,8 +41,84 @@ interface TournamentMatch {
 }
 
 const gameRoutes: FastifyPluginAsync = async (fastify) => {
+  // Authentication middleware function that has access to fastify.jwt
+  const authenticateGameUser = async (request: any, reply: any) => {
+    try {
+      console.log('🔍 Game Routes Authentication Debug:');
+      console.log('Authorization header:', request.headers.authorization);
+      console.log('Session cookie:', request.cookies.session);
+      
+      // Check for JWT token in Authorization header first
+      const authHeader = request.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        console.log('🎫 Found JWT token, attempting verification...');
+        try {
+          const decoded = fastify.jwt.verify(token) as JwtPayload;
+          console.log('✅ JWT verified successfully, userId:', decoded.userId);
+          
+          // Get user from database
+          const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as User | undefined;
+          
+          if (user) {
+            console.log('✅ User found in database:', user.username);
+            // Attach user to request
+            request.userId = user.id;
+            request.user = user;
+            return;
+          } else {
+            console.log('❌ User not found in database for userId:', decoded.userId);
+          }
+        } catch (jwtError) {
+          console.log('❌ JWT verification failed:', jwtError);
+          // JWT verification failed, fall back to session check
+        }
+      } else {
+        console.log('🚫 No JWT token found in Authorization header');
+      }
+
+      // Fall back to session cookie check
+      const sessionId = request.cookies.session;
+
+      if (!sessionId) {
+        console.log('❌ No session cookie found');
+        reply.code(401).send({ error: 'Unauthorized' });
+        return;
+      }
+
+      console.log('🍪 Checking session cookie:', sessionId);
+      const session = db.prepare(`
+        SELECT * FROM sessions
+        WHERE id = ? AND expires_at > datetime('now')
+      `).get(sessionId) as Session | undefined;
+
+      if (!session) {
+        console.log('❌ Session not found or expired');
+        reply.code(401).send({ error: 'Session expired' });
+        return;
+      }
+
+      // Get user from database
+      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(session.user_id) as User | undefined;
+
+      if (!user) {
+        console.log('❌ User not found for session');
+        reply.code(401).send({ error: 'User not found' });
+        return;
+      }
+
+      console.log('✅ Session authenticated successfully, user:', user.username);
+      // Attach user to request
+      request.userId = session.user_id;
+      request.user = user;
+    } catch (error) {
+      console.error('❌ Authentication error:', error);
+      reply.code(401).send({ error: 'Authentication failed' });
+    }
+  };
+
   // Create a new game (matchmaking) - requires authentication
-  fastify.post('/match', { preHandler: authenticateUser }, async (request) => {
+  fastify.post('/match', { preHandler: authenticateGameUser }, async (request) => {
     const userId = (request as any).userId;
 
         // Check if user is already in a pending game

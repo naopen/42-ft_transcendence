@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import session from '@fastify/session';
 import websocket from '@fastify/websocket';
+import jwt from '@fastify/jwt';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { initDatabase } from './database/init';
@@ -42,6 +43,11 @@ async function initializeApp() {
         httpOnly: true,
         maxAge: 86400000 // 1 day
       }
+    });
+
+    // Register JWT plugin globally
+    await server.register(jwt, {
+      secret: process.env.JWT_SECRET || 'supersecret'
     });
 
     await server.register(websocket);

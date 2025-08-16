@@ -1,6 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
 import oauthPlugin from '@fastify/oauth2';
-import jwt from '@fastify/jwt';
 import { db } from '../database/init';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -39,11 +38,6 @@ interface JwtPayload {
 }
 
 const authRoutes: FastifyPluginAsync = async (fastify) => {
-  // Register JWT plugin
-  await fastify.register(jwt, {
-    secret: process.env.JWT_SECRET || 'supersecret'
-  });
-
   // Register OAuth2 plugin for Google
   await fastify.register(oauthPlugin, {
     name: 'googleOAuth2',
