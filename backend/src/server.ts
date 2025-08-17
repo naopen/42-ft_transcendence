@@ -6,8 +6,6 @@ import websocket from '@fastify/websocket';
 import jwt from '@fastify/jwt';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
 import os from 'os';
 import { initDatabase } from './database/init';
 import authRoutes from './routes/auth';
@@ -19,7 +17,7 @@ import { setupGameSocket } from './sockets/gameSocket';
 // Load environment variables
 dotenv.config();
 
-// Get local IP address for remote multiplayer
+// Get local IP address for logging
 function getLocalIpAddress(): string {
   const interfaces = os.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
@@ -33,33 +31,10 @@ function getLocalIpAddress(): string {
   return '0.0.0.0'; // Fallback
 }
 
-// HTTPS configuration
-let httpsOptions = {};
-const useHttps = process.env.USE_HTTPS === 'true';
-
-if (useHttps) {
-  const certsPath = path.join(__dirname, '..', 'certs');
-  const keyPath = path.join(certsPath, 'key.pem');
-  const certPath = path.join(certsPath, 'cert.pem');
-  
-  if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
-    httpsOptions = {
-      https: {
-        key: fs.readFileSync(keyPath),
-        cert: fs.readFileSync(certPath)
-      }
-    };
-    console.log('🔐 HTTPS enabled with SSL certificates');
-  } else {
-    console.warn('⚠️  SSL certificates not found, falling back to HTTP');
-  }
-}
-
 const server = Fastify({
   logger: {
     level: 'info'
-  },
-  ...httpsOptions
+  }
 });
 
 // Initialize database
@@ -70,11 +45,10 @@ async function initializeApp() {
 
     // Register plugins
     const localIp = getLocalIpAddress();
-    const protocol = useHttps ? 'https' : 'http';
-    const frontendUrl = process.env.FRONTEND_URL || `${protocol}://${localIp}:5173`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
     
     await server.register(cors, {
-      origin: [frontendUrl, 'http://localhost:5173', 'https://localhost:5173'],
+      origin: [frontendUrl, 'http://localhost:8080', 'https://localhost:8080'],
       credentials: true
     });
 
@@ -83,7 +57,7 @@ async function initializeApp() {
     await server.register(session, {
       secret: process.env.SESSION_SECRET || 'a-very-long-secret-key-that-should-be-changed',
       cookie: {
-        secure: useHttps,
+        secure: false, // nginx handles HTTPS termination
         httpOnly: true,
         maxAge: 86400000, // 1 day
         sameSite: 'lax'
@@ -100,7 +74,7 @@ async function initializeApp() {
     // Setup Socket.IO
     const io = new Server(server.server, {
       cors: {
-        origin: [frontendUrl, 'http://localhost:5173', 'https://localhost:5173'],
+        origin: [frontendUrl, 'http://localhost:8080', 'https://localhost:8080'],
         credentials: true
       }
     });
@@ -125,19 +99,13 @@ async function initializeApp() {
 
     await server.listen({ port, host });
 
-    const serverProtocol = useHttps ? 'https' : 'http';
     const displayHost = host === '0.0.0.0' ? localIp : host;
     
-    console.log(`🚀 Server running at ${serverProtocol}://${displayHost}:${port}`);
-    console.log(`📊 Health check: ${serverProtocol}://${displayHost}:${port}/health`);
+    console.log(`🚀 Server running at http://${displayHost}:${port}`);
+    console.log(`📊 Health check: http://${displayHost}:${port}/health`);
     console.log(`🌐 Local IP: ${localIp}`);
-    console.log(`🔐 HTTPS: ${useHttps ? 'Enabled' : 'Disabled'}`);
-    
-    if (useHttps) {
-      console.log(`\n🎮 Remote Multiplayer Access:`);
-      console.log(`   Share this URL: https://${localIp}:5173`);
-      console.log(`   Backend API: https://${localIp}:${port}`);
-    }
+    console.log(`🔌 Proxied through nginx on port 8080`);
+    console.log(`🎮 For remote access, use: make ngrok`);
 
   } catch (err) {
     server.log.error(err);

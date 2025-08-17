@@ -1,18 +1,30 @@
 version: '3.8'
 
 services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: ft_transcendence_nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - transcendence-network
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: ft_transcendence_backend
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     volumes:
       - ./backend:/app
       - /app/node_modules
       - ./data:/app/data
-      - ./certs:/app/certs:ro
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -24,7 +36,7 @@ services:
       - USE_HTTPS=${USE_HTTPS}
       - FRONTEND_URL=${FRONTEND_URL}
       - BACKEND_URL=${BACKEND_URL}
-      - HOST=${HOST}
+      - HOST=0.0.0.0
     networks:
       - transcendence-network
     depends_on:
@@ -35,12 +47,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: ft_transcendence_frontend
-    ports:
-      - "5173:5173"
+    expose:
+      - "5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - ./certs:/app/certs:ro
     environment:
       - VITE_API_URL=${VITE_API_URL}
       - VITE_WS_URL=${VITE_WS_URL}
