@@ -255,23 +255,52 @@ function Game() {
 
       {/* Controls Info */}
       <div className="bg-42-gray rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-white mb-2">{t('controls')}</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <kbd className="px-2 py-1 bg-42-dark rounded text-42-primary">W</kbd>
-            <p className="text-sm text-gray-400 mt-1">{t('moveUp')}</p>
+        <h3 className="text-lg font-semibold text-white mb-3">{t('controls')}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Single Player Mode */}
+          <div className="border border-gray-700 rounded p-3">
+            <h4 className="text-sm font-semibold text-42-primary mb-2">Single Player / Player 1 (Left)</h4>
+            <div className="flex justify-center gap-6">
+              <div className="text-center">
+                <kbd className="px-3 py-1 bg-42-dark rounded text-42-primary font-mono">W</kbd>
+                <p className="text-xs text-gray-400 mt-1">{t('moveUp')}</p>
+              </div>
+              <div className="text-center">
+                <kbd className="px-3 py-1 bg-42-dark rounded text-42-primary font-mono">S</kbd>
+                <p className="text-xs text-gray-400 mt-1">{t('moveDown')}</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">Or use Arrow Keys in single player</p>
           </div>
-          <div className="text-center">
-            <kbd className="px-2 py-1 bg-42-dark rounded text-42-primary">S</kbd>
-            <p className="text-sm text-gray-400 mt-1">{t('moveDown')}</p>
+          
+          {/* Two Player Mode */}
+          <div className="border border-gray-700 rounded p-3">
+            <h4 className="text-sm font-semibold text-42-secondary mb-2">Player 2 (Right) - Two Player Mode</h4>
+            <div className="flex justify-center gap-6">
+              <div className="text-center">
+                <kbd className="px-3 py-1 bg-42-dark rounded text-42-secondary font-mono">↑</kbd>
+                <p className="text-xs text-gray-400 mt-1">{t('moveUp')}</p>
+              </div>
+              <div className="text-center">
+                <kbd className="px-3 py-1 bg-42-dark rounded text-42-secondary font-mono">↓</kbd>
+                <p className="text-xs text-gray-400 mt-1">{t('moveDown')}</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">AI controlled in single player</p>
           </div>
-          <div className="text-center">
-            <kbd className="px-2 py-1 bg-42-dark rounded text-42-primary">↑</kbd>
-            <p className="text-sm text-gray-400 mt-1">{t('moveUp')}</p>
-          </div>
-          <div className="text-center">
-            <kbd className="px-2 py-1 bg-42-dark rounded text-42-primary">↓</kbd>
-            <p className="text-sm text-gray-400 mt-1">{t('moveDown')}</p>
+        </div>
+        
+        {/* Additional Controls */}
+        <div className="mt-3 pt-3 border-t border-gray-700">
+          <div className="flex justify-center gap-6 text-xs">
+            <div className="text-center">
+              <kbd className="px-2 py-1 bg-gray-700 rounded text-gray-300 font-mono">P</kbd> / <kbd className="px-2 py-1 bg-gray-700 rounded text-gray-300 font-mono">ESC</kbd>
+              <p className="text-gray-400 mt-1">Pause</p>
+            </div>
+            <div className="text-center">
+              <kbd className="px-2 py-1 bg-gray-700 rounded text-gray-300 font-mono">R</kbd>
+              <p className="text-gray-400 mt-1">Restart (after game ends)</p>
+            </div>
           </div>
         </div>
       </div>
