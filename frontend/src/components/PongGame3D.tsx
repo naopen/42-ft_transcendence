@@ -171,23 +171,23 @@ function PongGame3D() {
   useEffect(() => {
     if (!sceneRef.current || !gameStore.socket) return;
 
-    // Update paddle positions from remote
+    // Update paddle positions from remote (invert Z-axis to match intuitive controls)
     if (paddle1Ref.current && gameStore.player1) {
-      const y = (gameStore.player1.position - GAME_HEIGHT / 2) * SCALE_FACTOR;
+      const y = -(gameStore.player1.position - GAME_HEIGHT / 2) * SCALE_FACTOR;
       paddle1Ref.current.position.z = y;
       localGameRef.current.player1Y = gameStore.player1.position;
     }
 
     if (paddle2Ref.current && gameStore.player2) {
-      const y = (gameStore.player2.position - GAME_HEIGHT / 2) * SCALE_FACTOR;
+      const y = -(gameStore.player2.position - GAME_HEIGHT / 2) * SCALE_FACTOR;
       paddle2Ref.current.position.z = y;
       localGameRef.current.player2Y = gameStore.player2.position;
     }
 
-    // Update ball position from remote
+    // Update ball position from remote (invert Z-axis to match intuitive controls)
     if (ballRef.current && gameStore.ball) {
       const x = (gameStore.ball.x - GAME_WIDTH / 2) * SCALE_FACTOR;
-      const z = (gameStore.ball.y - GAME_HEIGHT / 2) * SCALE_FACTOR;
+      const z = -(gameStore.ball.y - GAME_HEIGHT / 2) * SCALE_FACTOR;
       ballRef.current.position.x = x;
       ballRef.current.position.z = z;
       localGameRef.current.ballX = gameStore.ball.x;
@@ -384,16 +384,16 @@ function PongGame3D() {
       localGame.ballVelocityZ = 0;
     }
 
-    // Update 3D positions
+    // Update 3D positions (invert Z-axis to match intuitive controls)
     if (paddle1Ref.current) {
-      paddle1Ref.current.position.z = (localGame.player1Y - GAME_HEIGHT / 2) * SCALE_FACTOR;
+      paddle1Ref.current.position.z = -(localGame.player1Y - GAME_HEIGHT / 2) * SCALE_FACTOR;
     }
     if (paddle2Ref.current) {
-      paddle2Ref.current.position.z = (localGame.player2Y - GAME_HEIGHT / 2) * SCALE_FACTOR;
+      paddle2Ref.current.position.z = -(localGame.player2Y - GAME_HEIGHT / 2) * SCALE_FACTOR;
     }
     if (ballRef.current) {
       ballRef.current.position.x = (localGame.ballX - GAME_WIDTH / 2) * SCALE_FACTOR;
-      ballRef.current.position.z = (localGame.ballY - GAME_HEIGHT / 2) * SCALE_FACTOR;
+      ballRef.current.position.z = -(localGame.ballY - GAME_HEIGHT / 2) * SCALE_FACTOR;
       ballRef.current.position.y = (localGame.ballZ - GAME_DEPTH / 2) * SCALE_FACTOR * 0.3 + 0.2;
       
       // Rotate ball for visual effect
