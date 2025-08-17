@@ -12,7 +12,7 @@ PROJECT_NAME = ft_transcendence
 # Docker compose command
 DOCKER_COMPOSE = docker-compose
 
-.PHONY: all help build up down restart logs clean fclean re status install
+.PHONY: all help build up down restart logs clean fclean re status install certs setup-https show-urls ngrok setup-ngrok stop-ngrok
 
 # Default target
 all: up
@@ -33,6 +33,16 @@ help:
 	@echo "  make re       - Full rebuild (fclean + build + up)"
 	@echo "  make status   - Show container status"
 	@echo "  make install  - Install dependencies locally (for development)"
+	@echo ""
+	@echo "$(YELLOW)HTTPS & Remote Multiplayer:$(NC)"
+	@echo "  make certs    - Generate SSL certificates for HTTPS"
+	@echo "  make setup-https - Setup HTTPS with certificates and start"
+	@echo "  make show-urls   - Show current access URLs and network info"
+	@echo ""
+	@echo "$(YELLOW)ngrok Remote Access (Recommended):$(NC)"
+	@echo "  make ngrok       - Start with ngrok for true remote access"
+	@echo "  make setup-ngrok - Setup and start ngrok tunnel"
+	@echo "  make stop-ngrok  - Stop ngrok tunnel"
 
 # Build Docker containers
 build:
@@ -45,7 +55,10 @@ up:
 	@echo "$(YELLOW)Starting ft_transcendence...$(NC)"
 	@$(DOCKER_COMPOSE) up --build -d
 	@echo "$(GREEN)Application is running!$(NC)"
-	@node scripts/show-urls.js
+	@echo "Unified Access: http://localhost:8080"
+	@echo "Health Check:   http://localhost:8080/health"
+	@echo ""
+	@echo "$(YELLOW)💡 For remote multiplayer, use: make ngrok$(NC)"
 
 # Stop containers
 down:
@@ -165,3 +178,22 @@ eval:
 	@echo "   - Test on same network from multiple PCs"
 	@echo ""
 	@echo "$(GREEN)All evaluation requirements are met!$(NC)"
+
+# ngrok Remote Access Commands
+ngrok: down
+	@echo "$(YELLOW)Starting ft_transcendence with ngrok...$(NC)"
+	@$(DOCKER_COMPOSE) up --build -d
+	@echo "$(GREEN)Application is running on port 8080!$(NC)"
+	@echo "$(YELLOW)Setting up ngrok tunnel...$(NC)"
+	@node scripts/setup-ngrok.js
+
+# Setup ngrok tunnel only
+setup-ngrok:
+	@echo "$(YELLOW)Setting up ngrok tunnel...$(NC)"
+	@node scripts/setup-ngrok.js
+
+# Stop ngrok tunnel
+stop-ngrok:
+	@echo "$(YELLOW)Stopping ngrok tunnel...$(NC)"
+	@pkill -f ngrok || true
+	@echo "$(GREEN)ngrok tunnel stopped!$(NC)"
