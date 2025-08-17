@@ -45,9 +45,7 @@ up:
 	@echo "$(YELLOW)Starting ft_transcendence...$(NC)"
 	@$(DOCKER_COMPOSE) up --build -d
 	@echo "$(GREEN)Application is running!$(NC)"
-	@echo "Frontend: http://localhost:5173"
-	@echo "Backend:  http://localhost:3000"
-	@echo "Health:   http://localhost:3000/health"
+	@node scripts/show-urls.js
 
 # Stop containers
 down:
@@ -76,7 +74,11 @@ fclean:
 	@echo "$(GREEN)Full clean complete!$(NC)"
 
 # Rebuild everything
-re: fclean build up
+re: fclean certs
+	@echo "$(YELLOW)Full rebuild with HTTPS...$(NC)"
+	@$(DOCKER_COMPOSE) up --build -d
+	@echo "$(GREEN)Full rebuild complete!$(NC)"
+	@node scripts/show-urls.js
 
 # Show container status
 status:
@@ -111,6 +113,23 @@ db-reset:
 dev-backend:
 	@cd backend && npm run dev
 
+# Generate SSL certificates
+certs:
+	@echo "$(YELLOW)Generating SSL certificates...$(NC)"
+	@node scripts/generate-certs.js
+	@echo "$(GREEN)SSL certificates generated!$(NC)"
+
+# Setup HTTPS and start
+setup-https: certs
+	@echo "$(YELLOW)Setting up HTTPS and starting application...$(NC)"
+	@$(DOCKER_COMPOSE) up --build -d
+	@echo "$(GREEN)Application is running with HTTPS!$(NC)"
+	@node scripts/show-urls.js
+
+# Show current URLs and network info
+show-urls:
+	@node scripts/show-urls.js
+
 dev-frontend:
 	@cd frontend && npm run dev
 
@@ -127,20 +146,22 @@ eval:
 	@echo "$(YELLOW)1. Check .env file:$(NC)"
 	@echo "   Make sure Google OAuth credentials are set"
 	@echo ""
-	@echo "$(YELLOW)2. Start the application:$(NC)"
-	@echo "   $$ make"
+	@echo "$(YELLOW)2. Setup HTTPS and start:$(NC)"
+	@echo "   $ make re"
 	@echo ""
-	@echo "$(YELLOW)3. Access the application:$(NC)"
-	@echo "   Frontend: http://localhost:5173"
-	@echo "   Backend:  http://localhost:3000"
+	@echo "$(YELLOW)3. Access URLs will be displayed automatically$(NC)"
 	@echo ""
 	@echo "$(YELLOW)4. Test features:$(NC)"
-	@echo "   - Google OAuth login"
+	@echo "   - Google OAuth login (HTTPS)"
 	@echo "   - 3D Pong game with Babylon.js"
-	@echo "   - Real-time multiplayer"
+	@echo "   - Real-time multiplayer (Remote access)"
 	@echo "   - Local tournament system"
 	@echo "   - Statistics dashboard"
 	@echo "   - Multi-language support (EN/JA/FR)"
 	@echo "   - Responsive design"
+	@echo ""
+	@echo "$(YELLOW)5. Remote multiplayer testing:$(NC)"
+	@echo "   - Share HTTPS URL with other devices"
+	@echo "   - Test on same network from multiple PCs"
 	@echo ""
 	@echo "$(GREEN)All evaluation requirements are met!$(NC)"
