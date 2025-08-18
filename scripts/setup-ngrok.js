@@ -100,8 +100,8 @@ function startNgrok(port) {
   return new Promise((resolve, reject) => {
     console.log(`${colors.yellow}🔌 Starting ngrok tunnel on port ${port}...${colors.reset}`);
     
-    // Use a more stable ngrok configuration
-    const ngrokProcess = exec(`ngrok http ${port} --log=stdout --region=jp --hostname-hash=ft-transcendence`, (error) => {
+    // Use stable ngrok configuration
+    const ngrokProcess = exec(`ngrok http ${port} --log=stdout`, (error) => {
       if (error) {
         reject(error);
       }
