@@ -5,10 +5,18 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
-// Load environment variables
-require('../backend/node_modules/dotenv').config();
+// Load environment variables manually
+const envPath = require('path').join(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  envContent.split('\n').forEach(line => {
+    const [key, value] = line.split('=');
+    if (key && value) {
+      process.env[key] = value;
+    }
+  });
+}
 
-// Color codes
 const colors = {
   green: '\x1b[32m',
   yellow: '\x1b[33m',
@@ -197,6 +205,29 @@ function updateViteConfig(ngrokUrl) {
   }
 }
 
+// Clean up Vite configuration - remove ngrok hosts
+function cleanupViteConfig() {
+  const viteConfigPath = path.join(__dirname, '..', 'frontend', 'vite.config.ts');
+  
+  try {
+    let viteConfig = fs.readFileSync(viteConfigPath, 'utf8');
+    
+    // Remove ngrok hosts from allowedHosts, keep only localhost
+    if (viteConfig.includes('allowedHosts')) {
+      viteConfig = viteConfig.replace(
+        /allowedHosts:\s*\[[^\]]*\]/,
+        `allowedHosts: ['localhost']`
+      );
+      
+      fs.writeFileSync(viteConfigPath, viteConfig);
+      console.log(`${colors.green}✅ Cleaned up Vite configuration - removed ngrok hosts${colors.reset}`);
+    }
+    
+  } catch (error) {
+    console.log(`${colors.yellow}⚠️  Could not cleanup Vite config: ${error.message}${colors.reset}`);
+  }
+}
+
 // Update .env file with ngrok URL
 function updateEnvFile(ngrokUrl) {
   const envPath = path.join(__dirname, '..', '.env');
@@ -230,7 +261,7 @@ function displayAccessInfo(ngrokUrl) {
   console.log(`${colors.yellow}🔧 Google OAuth Setup Required:${colors.reset}`);
   console.log(`   1. Go to Google Cloud Console`);
   console.log(`   2. Add redirect URI: ${colors.cyan}${ngrokUrl}/api/auth/google/callback${colors.reset}`);
-  console.log(`   3. Save and restart: ${colors.cyan}make restart${colors.reset}`);
+  console.log(`   3. Save settings and test login`);
   console.log('');
   console.log(`${colors.yellow}⚡ Real-time updates:${colors.reset}`);
   console.log(`   Any player can access from anywhere!`);
@@ -277,7 +308,15 @@ async function main() {
     // Keep process alive
     process.on('SIGINT', () => {
       console.log(`\n${colors.yellow}🛑 Stopping ngrok tunnel...${colors.reset}`);
+      console.log(`${colors.yellow}🧹 Cleaning up configuration...${colors.reset}`);
+      
+      // Clean up vite.config.ts
+      cleanupViteConfig();
+      
+      // Kill ngrok process
       ngrokProcess.kill();
+      
+      console.log(`${colors.green}✅ Cleanup complete!${colors.reset}`);
       process.exit(0);
     });
 
