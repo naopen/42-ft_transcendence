@@ -4,7 +4,11 @@ function Login() {
   const { t } = useTranslation();
 
   const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+    // Use relative URL to avoid hardcoded domain issues
+    const apiUrl = import.meta.env.DEV && import.meta.env.VITE_API_URL 
+      ? import.meta.env.VITE_API_URL 
+      : `${window.location.origin}/api`;
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   return (

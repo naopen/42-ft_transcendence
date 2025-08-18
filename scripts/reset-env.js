@@ -6,32 +6,54 @@ const path = require('path');
 const colors = {
   green: '\x1b[32m',
   yellow: '\x1b[33m',
+  red: '\x1b[31m',
   reset: '\x1b[0m'
 };
 
 // Reset .env file to localhost defaults
 function resetEnvFile() {
   const envPath = path.join(__dirname, '..', '.env');
-  const envExamplePath = path.join(__dirname, '..', '.env.example');
   
   try {
     // Read .env to preserve important keys like GOOGLE_CLIENT_ID
     let envContent = fs.readFileSync(envPath, 'utf8');
     
-    // Reset URLs to localhost defaults
-    envContent = envContent.replace(/FRONTEND_URL=.*/g, 'FRONTEND_URL=http://localhost:8080');
-    envContent = envContent.replace(/BACKEND_URL=.*/g, 'BACKEND_URL=http://localhost:8080');
-    envContent = envContent.replace(/VITE_API_URL=.*/g, 'VITE_API_URL=http://localhost:8080/api');
-    envContent = envContent.replace(/VITE_WS_URL=.*/g, 'VITE_WS_URL=ws://localhost:8080');
+    // Parse env content into key-value pairs
+    const lines = envContent.split('\n');
+    const envVars = {};
     
-    // Reset USE_HTTPS to false
-    envContent = envContent.replace(/USE_HTTPS=.*/g, 'USE_HTTPS=false');
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith('#')) {
+        const [key, ...valueParts] = trimmedLine.split('=');
+        if (key) {
+          envVars[key.trim()] = valueParts.join('=').trim();
+        }
+      }
+    });
     
-    fs.writeFileSync(envPath, envContent);
+    // Reset URL-related variables to localhost defaults
+    envVars['FRONTEND_URL'] = 'http://localhost:8080';
+    envVars['BACKEND_URL'] = 'http://localhost:8080';
+    envVars['VITE_API_URL'] = 'http://localhost:8080/api';
+    envVars['VITE_WS_URL'] = 'ws://localhost:8080';
+    envVars['USE_HTTPS'] = 'false';
+    
+    // Rebuild the .env content
+    const newEnvContent = Object.entries(envVars)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n');
+    
+    fs.writeFileSync(envPath, newEnvContent + '\n');
     
     console.log(`${colors.green}✅ Reset .env file to localhost defaults${colors.reset}`);
+    console.log(`${colors.yellow}   FRONTEND_URL=http://localhost:8080${colors.reset}`);
+    console.log(`${colors.yellow}   BACKEND_URL=http://localhost:8080${colors.reset}`);
+    console.log(`${colors.yellow}   VITE_API_URL=http://localhost:8080/api${colors.reset}`);
+    console.log(`${colors.yellow}   VITE_WS_URL=ws://localhost:8080${colors.reset}`);
   } catch (error) {
-    console.log(`${colors.yellow}⚠️  Could not reset .env file: ${error.message}${colors.reset}`);
+    console.log(`${colors.red}❌ Could not reset .env file: ${error.message}${colors.reset}`);
+    process.exit(1);
   }
 }
 

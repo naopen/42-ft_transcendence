@@ -34,7 +34,8 @@ function getLocalIpAddress(): string {
 const server = Fastify({
   logger: {
     level: 'info'
-  }
+  },
+  trustProxy: true // Trust X-Forwarded-* headers from nginx
 });
 
 // Initialize database
@@ -48,7 +49,29 @@ async function initializeApp() {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
     
     await server.register(cors, {
-      origin: [frontendUrl, 'http://localhost:8080', 'https://localhost:8080'],
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        
+        // Allow localhost in any form
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+          return callback(null, true);
+        }
+        
+        // Allow ngrok URLs
+        if (origin.includes('ngrok-free.app') || origin.includes('ngrok.io')) {
+          return callback(null, true);
+        }
+        
+        // Allow the configured frontend URL
+        if (origin === frontendUrl) {
+          return callback(null, true);
+        }
+        
+        // Log unrecognized origins for debugging
+        console.log('Unrecognized origin:', origin);
+        callback(null, true); // Allow all origins for development
+      },
       credentials: true
     });
 
@@ -74,7 +97,27 @@ async function initializeApp() {
     // Setup Socket.IO
     const io = new Server(server.server, {
       cors: {
-        origin: [frontendUrl, 'http://localhost:8080', 'https://localhost:8080'],
+        origin: (origin, callback) => {
+          // Allow requests with no origin
+          if (!origin) return callback(null, true);
+          
+          // Allow localhost in any form
+          if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return callback(null, true);
+          }
+          
+          // Allow ngrok URLs
+          if (origin.includes('ngrok-free.app') || origin.includes('ngrok.io')) {
+            return callback(null, true);
+          }
+          
+          // Allow the configured frontend URL
+          if (origin === frontendUrl) {
+            return callback(null, true);
+          }
+          
+          callback(null, true); // Allow all origins for development
+        },
         credentials: true
       }
     });

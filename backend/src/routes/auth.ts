@@ -79,6 +79,13 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const { token } = await (fastify as any).googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
 
+      // Get the frontend URL dynamically from request headers
+      const forwardedHost = request.headers['x-forwarded-host'];
+      const forwardedProto = request.headers['x-forwarded-proto'] || 'http';
+      const frontendUrl = forwardedHost 
+        ? `${forwardedProto}://${forwardedHost}`
+        : (process.env.FRONTEND_URL || 'http://localhost:8080');
+
       // Get user info from Google
       const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: {
@@ -134,15 +141,21 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       reply
         .setCookie('session', sessionId, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
+          secure: forwardedProto === 'https',
           sameSite: 'lax',
           maxAge: 86400 // 1 day
         })
-        .redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}?token=${jwtToken}&redirect=game`);
+        .redirect(`${frontendUrl}?token=${jwtToken}&redirect=game`);
 
     } catch (error) {
       fastify.log.error(error);
-      reply.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed`);
+      // Get frontend URL for error redirect
+      const forwardedHost = request.headers['x-forwarded-host'];
+      const forwardedProto = request.headers['x-forwarded-proto'] || 'http';
+      const frontendUrl = forwardedHost 
+        ? `${forwardedProto}://${forwardedHost}`
+        : (process.env.FRONTEND_URL || 'http://localhost:8080');
+      reply.redirect(`${frontendUrl}/login?error=auth_failed`);
     }
   });
 
