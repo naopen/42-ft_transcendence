@@ -12,37 +12,37 @@ PROJECT_NAME = ft_transcendence
 # Docker compose command
 DOCKER_COMPOSE = docker-compose
 
-.PHONY: all help build up down restart logs clean fclean re status install certs setup-https show-urls ngrok setup-ngrok stop-ngrok
+.PHONY: all help build dev up down restart logs clean fclean re status install ngrok setup-ngrok stop-ngrok eval
 
-# Default target
-all: up
+# Default target - HTTPS with ngrok (recommended)
+all: ngrok
 
 # Help command
 help:
 	@echo "$(GREEN)ft_transcendence - Makefile Commands$(NC)"
 	@echo ""
-	@echo "$(YELLOW)Available commands:$(NC)"
-	@echo "  make          - Start the application (docker-compose up)"
+	@echo "$(GREEN)🚀 HTTPS Remote Multiplayer (Default):$(NC)"
+	@echo "  make          - Start with ngrok (HTTPS remote access)"
+	@echo "  make all      - Same as make (ngrok HTTPS default)"
+	@echo "  make ngrok    - Start with ngrok tunnel (recommended)"
+	@echo "  make re       - Full rebuild with ngrok"
+	@echo ""
+	@echo "$(YELLOW)⚙️  Basic Commands:$(NC)"
 	@echo "  make build    - Build Docker containers"
-	@echo "  make up       - Start containers in detached mode"
 	@echo "  make down     - Stop and remove containers"
 	@echo "  make restart  - Restart all containers"
 	@echo "  make logs     - View container logs"
 	@echo "  make clean    - Stop containers and clean volumes"
 	@echo "  make fclean   - Full clean (containers, volumes, images)"
-	@echo "  make re       - Full rebuild (fclean + build + up)"
 	@echo "  make status   - Show container status"
 	@echo "  make install  - Install dependencies locally (for development)"
 	@echo ""
-	@echo "$(YELLOW)HTTPS & Remote Multiplayer:$(NC)"
-	@echo "  make certs    - Generate SSL certificates for HTTPS"
-	@echo "  make setup-https - Setup HTTPS with certificates and start"
-	@echo "  make show-urls   - Show current access URLs and network info"
-	@echo ""
-	@echo "$(YELLOW)ngrok Remote Access (Recommended):$(NC)"
-	@echo "  make ngrok       - Start with ngrok for true remote access"
-	@echo "  make setup-ngrok - Setup and start ngrok tunnel"
+	@echo "$(YELLOW)🛠️  Development (HTTP only):$(NC)"
+	@echo "  make dev      - Local development mode (HTTP on port 8080)"
+	@echo "  make setup-ngrok - Setup and start ngrok tunnel only"
 	@echo "  make stop-ngrok  - Stop ngrok tunnel"
+	@echo ""
+	@echo "$(GREEN)💡 For evaluation: Use 'make' or 'make ngrok' for true remote multiplayer!$(NC)"
 
 # Build Docker containers
 build:
@@ -50,15 +50,28 @@ build:
 	@$(DOCKER_COMPOSE) build
 	@echo "$(GREEN)Build complete!$(NC)"
 
-# Start containers
-up:
-	@echo "$(YELLOW)Starting ft_transcendence...$(NC)"
+# ngrok Remote Access Commands (Default HTTPS Mode)
+ngrok: down
+	@echo "$(GREEN)🚀 Starting ft_transcendence with ngrok (HTTPS)...$(NC)"
+	@echo "$(YELLOW)📦 Building and starting containers...$(NC)"
 	@$(DOCKER_COMPOSE) up --build -d
-	@echo "$(GREEN)Application is running!$(NC)"
-	@echo "Unified Access: http://localhost:8080"
-	@echo "Health Check:   http://localhost:8080/health"
+	@echo "$(GREEN)✅ Application containers running!$(NC)"
+	@echo "$(YELLOW)🔌 Setting up ngrok tunnel...$(NC)"
+	@node scripts/setup-ngrok.js
+
+# Local development (HTTP only)
+dev:
+	@echo "$(YELLOW)Starting ft_transcendence in development mode...$(NC)"
+	@echo "$(RED)⚠️  Development mode: HTTP only, no remote access$(NC)"
+	@$(DOCKER_COMPOSE) up --build -d
+	@echo "$(GREEN)Application is running in development mode!$(NC)"
+	@echo "Local Access: http://localhost:8080"
+	@echo "Health Check: http://localhost:8080/health"
 	@echo ""
 	@echo "$(YELLOW)💡 For remote multiplayer, use: make ngrok$(NC)"
+
+# Legacy alias for development mode
+up: dev
 
 # Stop containers
 down:
@@ -67,7 +80,7 @@ down:
 	@echo "$(GREEN)Containers stopped!$(NC)"
 
 # Restart containers
-restart: down up
+restart: down ngrok
 
 # View logs
 logs:
@@ -86,12 +99,8 @@ fclean:
 	@docker image prune -f
 	@echo "$(GREEN)Full clean complete!$(NC)"
 
-# Rebuild everything
-re: fclean certs
-	@echo "$(YELLOW)Full rebuild with HTTPS...$(NC)"
-	@$(DOCKER_COMPOSE) up --build -d
-	@echo "$(GREEN)Full rebuild complete!$(NC)"
-	@node scripts/show-urls.js
+# Rebuild everything with ngrok (HTTPS default)
+re: fclean ngrok
 
 # Show container status
 status:
@@ -106,12 +115,26 @@ install:
 	@cd frontend && npm install
 	@echo "$(GREEN)Dependencies installed!$(NC)"
 
+# Setup ngrok tunnel only
+setup-ngrok:
+	@echo "$(YELLOW)Setting up ngrok tunnel...$(NC)"
+	@node scripts/setup-ngrok.js
+
+# Stop ngrok tunnel
+stop-ngrok:
+	@echo "$(YELLOW)Stopping ngrok tunnel...$(NC)"
+	@pkill -f ngrok || true
+	@echo "$(GREEN)ngrok tunnel stopped!$(NC)"
+
 # Backend specific commands
 backend-logs:
 	@$(DOCKER_COMPOSE) logs -f backend
 
 frontend-logs:
 	@$(DOCKER_COMPOSE) logs -f frontend
+
+nginx-logs:
+	@$(DOCKER_COMPOSE) logs -f nginx
 
 redis-logs:
 	@$(DOCKER_COMPOSE) logs -f redis
@@ -126,74 +149,46 @@ db-reset:
 dev-backend:
 	@cd backend && npm run dev
 
-# Generate SSL certificates
-certs:
-	@echo "$(YELLOW)Generating SSL certificates...$(NC)"
-	@node scripts/generate-certs.js
-	@echo "$(GREEN)SSL certificates generated!$(NC)"
-
-# Setup HTTPS and start
-setup-https: certs
-	@echo "$(YELLOW)Setting up HTTPS and starting application...$(NC)"
-	@$(DOCKER_COMPOSE) up --build -d
-	@echo "$(GREEN)Application is running with HTTPS!$(NC)"
-	@node scripts/show-urls.js
-
-# Show current URLs and network info
-show-urls:
-	@node scripts/show-urls.js
-
 dev-frontend:
 	@cd frontend && npm run dev
 
-# Health check
+# Health check (requires running application)
 health:
-	@curl -s http://localhost:3000/health | jq '.' || echo "$(RED)Backend is not running$(NC)"
+	@echo "$(YELLOW)Checking application health...$(NC)"
+	@node scripts/test-nginx.js
 
 # Evaluation helper
 eval:
-	@echo "$(GREEN)=====================================$(NC)"
+	@echo "$(GREEN)=========================================$(NC)"
 	@echo "$(GREEN)   ft_transcendence - Ready for Evaluation$(NC)"
-	@echo "$(GREEN)=====================================$(NC)"
+	@echo "$(GREEN)=========================================$(NC)"
 	@echo ""
 	@echo "$(YELLOW)1. Check .env file:$(NC)"
 	@echo "   Make sure Google OAuth credentials are set"
 	@echo ""
-	@echo "$(YELLOW)2. Setup HTTPS and start:$(NC)"
-	@echo "   $ make re"
+	@echo "$(YELLOW)2. Start with ngrok (HTTPS default):$(NC)"
+	@echo "   $$ make"
+	@echo "   $$ # or specifically: make ngrok"
 	@echo ""
-	@echo "$(YELLOW)3. Access URLs will be displayed automatically$(NC)"
+	@echo "$(YELLOW)3. ngrok will automatically:$(NC)"
+	@echo "   - Install ngrok if needed (brew install ngrok)"
+	@echo "   - Configure authentication token"
+	@echo "   - Start HTTPS tunnel"
+	@echo "   - Display public URL"
 	@echo ""
 	@echo "$(YELLOW)4. Test features:$(NC)"
-	@echo "   - Google OAuth login (HTTPS)"
+	@echo "   - Google OAuth login (HTTPS via ngrok)"
 	@echo "   - 3D Pong game with Babylon.js"
-	@echo "   - Real-time multiplayer (Remote access)"
+	@echo "   - Real-time multiplayer (Internet-wide access)"
 	@echo "   - Local tournament system"
 	@echo "   - Statistics dashboard"
 	@echo "   - Multi-language support (EN/JA/FR)"
 	@echo "   - Responsive design"
 	@echo ""
 	@echo "$(YELLOW)5. Remote multiplayer testing:$(NC)"
-	@echo "   - Share HTTPS URL with other devices"
-	@echo "   - Test on same network from multiple PCs"
+	@echo "   - Share ngrok HTTPS URL with anyone, anywhere"
+	@echo "   - Test from completely different networks"
+	@echo "   - No firewall or router configuration needed"
 	@echo ""
-	@echo "$(GREEN)All evaluation requirements are met!$(NC)"
-
-# ngrok Remote Access Commands
-ngrok: down
-	@echo "$(YELLOW)Starting ft_transcendence with ngrok...$(NC)"
-	@$(DOCKER_COMPOSE) up --build -d
-	@echo "$(GREEN)Application is running on port 8080!$(NC)"
-	@echo "$(YELLOW)Setting up ngrok tunnel...$(NC)"
-	@node scripts/setup-ngrok.js
-
-# Setup ngrok tunnel only
-setup-ngrok:
-	@echo "$(YELLOW)Setting up ngrok tunnel...$(NC)"
-	@node scripts/setup-ngrok.js
-
-# Stop ngrok tunnel
-stop-ngrok:
-	@echo "$(YELLOW)Stopping ngrok tunnel...$(NC)"
-	@pkill -f ngrok || true
-	@echo "$(GREEN)ngrok tunnel stopped!$(NC)"
+	@echo "$(GREEN)✅ All evaluation requirements met!$(NC)"
+	@echo "$(GREEN)🌐 True remote multiplayer via ngrok HTTPS tunnel$(NC)"
