@@ -12,7 +12,7 @@ PROJECT_NAME = ft_transcendence
 # Docker compose command
 DOCKER_COMPOSE = docker-compose
 
-.PHONY: all help build dev up down restart logs clean fclean re status install ngrok setup-ngrok stop-ngrok eval
+.PHONY: all help build dev up down restart logs clean fclean re status install ngrok setup-ngrok stop-ngrok stop-all hard-reset force-rebuild eval
 
 # Default target - HTTPS with ngrok (recommended)
 all: ngrok
@@ -25,12 +25,13 @@ help:
 	@echo "  make          - Start with ngrok (HTTPS remote access)"
 	@echo "  make all      - Same as make (ngrok HTTPS default)"
 	@echo "  make ngrok    - Start with ngrok tunnel (recommended)"
-	@echo "  make re       - Full rebuild with ngrok"
+	@echo "  make re       - Full rebuild with ngrok (environment-safe)"
+	@echo "  make hard-reset - Nuclear reset (fixes all caching issues)"
 	@echo ""
 	@echo "$(YELLOW)⚙️  Basic Commands:$(NC)"
 	@echo "  make build    - Build Docker containers"
 	@echo "  make down     - Stop and remove containers"
-	@echo "  make restart  - Restart all containers"
+	@echo "  make restart  - Restart all containers (environment-safe)"
 	@echo "  make logs     - View container logs"
 	@echo "  make clean    - Stop containers and clean volumes"
 	@echo "  make fclean   - Full clean (containers, volumes, images)"
@@ -41,8 +42,11 @@ help:
 	@echo "  make dev      - Local development mode (HTTP on port 8080)"
 	@echo "  make setup-ngrok - Setup and start ngrok tunnel only"
 	@echo "  make stop-ngrok  - Stop ngrok tunnel"
+	@echo "  make stop-all    - Stop everything (ngrok + containers)"
+	@echo "  make force-rebuild - Force rebuild backend (fixes env cache)"
 	@echo ""
 	@echo "$(GREEN)💡 For evaluation: Use 'make' or 'make ngrok' for true remote multiplayer!$(NC)"
+	@echo "$(RED)🔧 Having issues? Try 'make hard-reset' to fix all problems!$(NC)"
 
 # Build Docker containers
 build:
@@ -51,9 +55,11 @@ build:
 	@echo "$(GREEN)Build complete!$(NC)"
 
 # ngrok Remote Access Commands (Default HTTPS Mode)
-ngrok: down
+ngrok: stop-all
 	@echo "$(GREEN)🚀 Starting ft_transcendence with ngrok (HTTPS)...$(NC)"
-	@echo "$(YELLOW)📦 Building and starting containers...$(NC)"
+	@echo "$(YELLOW)📰 Stopping any existing ngrok tunnels...$(NC)"
+	@pkill -f ngrok || true
+	@echo "$(YELLOW)📦 Building and starting containers with fresh environment...$(NC)"
 	@$(DOCKER_COMPOSE) up --build -d
 	@echo "$(GREEN)✅ Application containers running!$(NC)"
 	@echo "$(YELLOW)🔌 Setting up ngrok tunnel...$(NC)"
@@ -76,11 +82,14 @@ up: dev
 # Stop containers
 down:
 	@echo "$(YELLOW)Stopping containers...$(NC)"
-	@$(DOCKER_COMPOSE) down
-	@echo "$(GREEN)Containers stopped!$(NC)"
+	@$(DOCKER_COMPOSE) down --remove-orphans
+	@echo "$(GREEN)Containers stopped and orphans removed!$(NC)"
 
-# Restart containers
-restart: down ngrok
+# Restart containers (environment-safe)
+restart: stop-all force-rebuild
+	@echo "$(GREEN)🔄 Restarting with fresh environment...$(NC)"
+	@$(DOCKER_COMPOSE) up --build -d
+	@node scripts/setup-ngrok.js
 
 # View logs
 logs:
@@ -89,18 +98,26 @@ logs:
 # Clean containers and volumes
 clean:
 	@echo "$(YELLOW)Cleaning containers and volumes...$(NC)"
-	@$(DOCKER_COMPOSE) down -v
+	@pkill -f ngrok || true
+	@$(DOCKER_COMPOSE) down -v --remove-orphans
 	@echo "$(GREEN)Clean complete!$(NC)"
 
 # Full clean (including images)
 fclean:
 	@echo "$(RED)Full clean - removing everything...$(NC)"
-	@$(DOCKER_COMPOSE) down -v --rmi all
+	@pkill -f ngrok || true
+	@$(DOCKER_COMPOSE) down -v --rmi all --remove-orphans
 	@docker image prune -f
+	@docker container prune -f
+	@docker volume prune -f
 	@echo "$(GREEN)Full clean complete!$(NC)"
 
-# Rebuild everything with ngrok (HTTPS default)
-re: fclean ngrok
+# Rebuild everything with ngrok (HTTPS default) - Environment-safe
+re: fclean
+	@echo "$(GREEN)📱 Complete rebuild with environment refresh...$(NC)"
+	@$(DOCKER_COMPOSE) up --build -d
+	@echo "$(YELLOW)🔌 Setting up fresh ngrok tunnel...$(NC)"
+	@node scripts/setup-ngrok.js
 
 # Show container status
 status:
@@ -125,6 +142,36 @@ stop-ngrok:
 	@echo "$(YELLOW)Stopping ngrok tunnel...$(NC)"
 	@pkill -f ngrok || true
 	@echo "$(GREEN)ngrok tunnel stopped!$(NC)"
+
+# Stop everything (ngrok + containers)
+stop-all:
+	@echo "$(YELLOW)📴 Stopping all services...$(NC)"
+	@pkill -f ngrok || true
+	@$(DOCKER_COMPOSE) down --remove-orphans
+	@echo "$(GREEN)✅ All services stopped!$(NC)"
+
+# Nuclear reset - fixes all caching issues
+hard-reset:
+	@echo "$(RED)📾 NUCLEAR RESET - Fixing all environment and cache issues...$(NC)"
+	@pkill -f ngrok || true
+	@$(DOCKER_COMPOSE) down -v --rmi all --remove-orphans
+	@docker image prune -f
+	@docker container prune -f
+	@docker volume prune -f
+	@docker system prune -f
+	@echo "$(GREEN)💫 System completely reset!$(NC)"
+	@echo "$(YELLOW)🚀 Starting fresh...$(NC)"
+	@$(DOCKER_COMPOSE) up --build -d
+	@echo "$(YELLOW)🔌 Setting up ngrok tunnel...$(NC)"
+	@node scripts/setup-ngrok.js
+
+# Force rebuild backend container (fixes environment variable cache)
+force-rebuild:
+	@echo "$(YELLOW)🔨 Force rebuilding backend to fix environment cache...$(NC)"
+	@$(DOCKER_COMPOSE) stop backend
+	@$(DOCKER_COMPOSE) rm -f backend
+	@$(DOCKER_COMPOSE) up --build -d backend
+	@echo "$(GREEN)✅ Backend rebuilt with fresh environment!$(NC)"
 
 # Backend specific commands
 backend-logs:
