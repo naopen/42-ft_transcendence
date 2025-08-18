@@ -26,14 +26,51 @@ function checkNgrok() {
   return new Promise((resolve) => {
     exec('ngrok --version', (error) => {
       if (error) {
-        console.log(`${colors.red}❌ ngrok is not installed${colors.reset}`);
-        console.log(`${colors.yellow}📦 Please install ngrok:${colors.reset}`);
-        console.log(`   ${colors.cyan}https://ngrok.com/download${colors.reset}`);
-        console.log(`   ${colors.cyan}Or: brew install ngrok${colors.reset}`);
+        console.log(`${colors.yellow}⚠️  ngrok is not installed${colors.reset}`);
         resolve(false);
       } else {
         console.log(`${colors.green}✅ ngrok is installed${colors.reset}`);
         resolve(true);
+      }
+    });
+  });
+}
+
+// Install ngrok
+function installNgrok() {
+  return new Promise((resolve, reject) => {
+    console.log(`${colors.yellow}📦 Installing ngrok...${colors.reset}`);
+    
+    exec('brew install ngrok', (error) => {
+      if (error) {
+        console.log(`${colors.red}❌ Failed to install ngrok with brew${colors.reset}`);
+        console.log(`${colors.yellow}💡 Please install manually:${colors.reset}`);
+        console.log(`   ${colors.cyan}https://ngrok.com/download${colors.reset}`);
+        reject(error);
+      } else {
+        console.log(`${colors.green}✅ ngrok installed successfully${colors.reset}`);
+        resolve();
+      }
+    });
+  });
+}
+
+// Configure ngrok authtoken
+function configureNgrokAuth() {
+  return new Promise((resolve, reject) => {
+    console.log(`${colors.yellow}🔑 Configuring ngrok authentication...${colors.reset}`);
+    
+    const authtoken = '31HyZL9wTSky5SL2zYH8FoKpTaX_Ab8KUZnKw2n449jUs1Qy';
+    
+    exec(`ngrok config add-authtoken ${authtoken}`, (error) => {
+      if (error) {
+        console.log(`${colors.red}❌ Failed to configure ngrok auth${colors.reset}`);
+        console.log(`${colors.yellow}💡 Please configure manually:${colors.reset}`);
+        console.log(`   ${colors.cyan}ngrok config add-authtoken ${authtoken}${colors.reset}`);
+        reject(error);
+      } else {
+        console.log(`${colors.green}✅ ngrok authentication configured${colors.reset}`);
+        resolve();
       }
     });
   });
@@ -158,8 +195,12 @@ async function main() {
   try {
     // Check ngrok installation
     const isNgrokInstalled = await checkNgrok();
+    
     if (!isNgrokInstalled) {
-      process.exit(1);
+      // Auto-install ngrok
+      await installNgrok();
+      // Configure auth token
+      await configureNgrokAuth();
     }
 
     // Kill existing ngrok processes
@@ -180,7 +221,7 @@ async function main() {
 
     // Keep process alive
     process.on('SIGINT', () => {
-      console.log(`\\n${colors.yellow}🛑 Stopping ngrok tunnel...${colors.reset}`);
+      console.log(`\n${colors.yellow}🛑 Stopping ngrok tunnel...${colors.reset}`);
       ngrokProcess.kill();
       process.exit(0);
     });

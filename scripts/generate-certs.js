@@ -22,10 +22,10 @@ function getLocalIpAddress() {
 const LOCAL_IP = getLocalIpAddress();
 console.log(`🔍 Detected local IP: ${LOCAL_IP}`);
 
-// Create certs directory if it doesn't exist
-const certsDir = path.join(__dirname, '..', 'certs');
-if (!fs.existsSync(certsDir)) {
-  fs.mkdirSync(certsDir, { recursive: true });
+// Create frontend certs directory if it doesn't exist
+const frontendCertsDir = path.join(__dirname, '..', 'frontend', 'certs');
+if (!fs.existsSync(frontendCertsDir)) {
+  fs.mkdirSync(frontendCertsDir, { recursive: true });
 }
 
 // Create backend certs directory if it doesn't exist
@@ -35,8 +35,8 @@ if (!fs.existsSync(backendCertsDir)) {
 }
 
 // Generate SSL certificate with local IP as SAN
-const keyPath = path.join(certsDir, 'key.pem');
-const certPath = path.join(certsDir, 'cert.pem');
+const keyPath = path.join(frontendCertsDir, 'key.pem');
+const certPath = path.join(frontendCertsDir, 'cert.pem');
 
 // OpenSSL configuration for SAN
 const sslConfig = `
@@ -68,7 +68,7 @@ IP.2 = ${LOCAL_IP}
 IP.3 = 0.0.0.0
 `;
 
-const configPath = path.join(certsDir, 'ssl.conf');
+const configPath = path.join(frontendCertsDir, 'ssl.conf');
 fs.writeFileSync(configPath, sslConfig);
 
 try {
@@ -88,7 +88,7 @@ try {
   fs.unlinkSync(configPath);
   
   console.log('✅ SSL certificates generated successfully!');
-  console.log(`📁 Certificates saved to: ${certsDir}`);
+  console.log(`📁 Frontend certificates: ${frontendCertsDir}`);
   console.log(`📁 Backend certificates: ${backendCertsDir}`);
   console.log(`🌐 Local IP: ${LOCAL_IP}`);
   
