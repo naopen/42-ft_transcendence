@@ -34,11 +34,26 @@ make dev
 - **Google OAuth対応**: ngrok HTTPSドメインでの認証
 - **HTTPS必須**: ngrokが自動的にHTTPS化
 
-### 🔧 自動化された機能
-1. **ngrok自動インストール**: システムにngrokがない場合、自動でインストール
-2. **認証自動設定**: 事前設定された認証トークンで自動設定
-3. **HTTPS自動化**: ngrokが自動的にHTTPS終端を処理
-4. **URL自動更新**: .envファイルが自動的に更新
+### 🔧 設定について
+
+### 自動設定項目
+- ✅ **ngrok自動インストール**: `brew install ngrok`
+- ✅ **認証トークン自動設定**: `.env`ファイルから読み取り
+- ✅ **Vite設定自動更新**: ngrokホストを`allowedHosts`に追加
+- ✅ **HTTPS自動化**: ngrokが自動的にHTTPS終端を処理
+- ✅ **URL自動更新**: `.env`ファイルが自動的に更新
+
+### .envファイル設定
+```bash
+# ngrok認証トークン（自動設定済み）
+NGROK_AUTHTOKEN=31HyZL9wTSky5SL2zYH8FoKpTaX_Ab8KUZnKw2n449jUs1Qy
+
+# その他のURL（自動更新される）
+FRONTEND_URL=http://localhost:8080
+BACKEND_URL=http://localhost:8080
+VITE_API_URL=http://localhost:8080/api
+VITE_WS_URL=ws://localhost:8080
+```
 
 ## 📋 使用方法
 
@@ -132,8 +147,9 @@ make stop-ngrok # ngrokトンネル停止
 
 ### ngrok関連
 - **「ngrok not found」**: 自動インストールされるはずですが、手動で`brew install ngrok`
-- **「authentication failed」**: 認証トークンが自動設定されるはずですが、手動設定も可能
+- **「authentication failed」**: `.env`ファイルの`NGROK_AUTHTOKEN`を確認
 - **「tunnel expired」**: `make stop-ngrok`してから`make ngrok`で再起動
+- **「Blocked request」**: Vite設定が自動更新されますが、手動で`allowedHosts`にホスト名を追加も可能
 
 ### OAuth関連
 - **「redirect_uri_mismatch」**: Google Cloud Consoleでngrok URLを追加
@@ -142,6 +158,7 @@ make stop-ngrok # ngrokトンネル停止
 ### アプリケーション関連
 - **「containers not starting」**: `make down`してから`make`で再起動
 - **「WebSocket connection failed」**: ngrokトンネルが正常に起動しているか確認
+- **「Vite host blocked」**: 自動的に解決されますが、手動でvite.config.tsの`allowedHosts`を確認
 
 ## 🎮 ゲーム機能
 
