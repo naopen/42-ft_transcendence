@@ -5,6 +5,9 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
+// Load environment variables
+require('../backend/node_modules/dotenv').config();
+
 // Color codes
 const colors = {
   green: '\x1b[32m',
@@ -60,7 +63,13 @@ function configureNgrokAuth() {
   return new Promise((resolve, reject) => {
     console.log(`${colors.yellow}🔑 Configuring ngrok authentication...${colors.reset}`);
     
-    const authtoken = '31HyZL9wTSky5SL2zYH8FoKpTaX_Ab8KUZnKw2n449jUs1Qy';
+    const authtoken = process.env.NGROK_AUTHTOKEN;
+    
+    if (!authtoken) {
+      console.log(`${colors.red}❌ NGROK_AUTHTOKEN not found in .env file${colors.reset}`);
+      reject(new Error('Missing NGROK_AUTHTOKEN in .env'));
+      return;
+    }
     
     exec(`ngrok config add-authtoken ${authtoken}`, (error) => {
       if (error) {
@@ -145,6 +154,48 @@ function getNgrokUrl() {
   });
 }
 
+// Update Vite configuration to allow ngrok host
+function updateViteConfig(ngrokUrl) {
+  const viteConfigPath = path.join(__dirname, '..', 'frontend', 'vite.config.ts');
+  
+  try {
+    let viteConfig = fs.readFileSync(viteConfigPath, 'utf8');
+    
+    // Extract hostname from ngrok URL
+    const ngrokHost = new URL(ngrokUrl).hostname;
+    
+    // Check if allowedHosts is already configured
+    if (viteConfig.includes('allowedHosts')) {
+      // Replace existing allowedHosts configuration
+      viteConfig = viteConfig.replace(
+        /allowedHosts:\s*\[[^\]]*\]/,
+        `allowedHosts: ['localhost', '${ngrokHost}']`
+      );
+    } else {
+      // Add allowedHosts configuration to server object
+      if (viteConfig.includes('server: {')) {
+        viteConfig = viteConfig.replace(
+          /(server:\s*{[^}]*)(,?\s*})/,
+          `$1,\n    allowedHosts: ['localhost', '${ngrokHost}']$2`
+        );
+      } else {
+        // Add complete server configuration
+        viteConfig = viteConfig.replace(
+          /(plugins:\s*\[[^\]]*\],?)/, 
+          `$1\n  server: {\n    allowedHosts: ['localhost', '${ngrokHost}']\n  },`
+        );
+      }
+    }
+    
+    fs.writeFileSync(viteConfigPath, viteConfig);
+    console.log(`${colors.green}✅ Updated Vite configuration for ngrok host: ${ngrokHost}${colors.reset}`);
+    
+  } catch (error) {
+    console.log(`${colors.yellow}⚠️  Could not update Vite config: ${error.message}${colors.reset}`);
+    console.log(`${colors.yellow}💡 You may need to manually add '${new URL(ngrokUrl).hostname}' to allowedHosts in vite.config.ts${colors.reset}`);
+  }
+}
+
 // Update .env file with ngrok URL
 function updateEnvFile(ngrokUrl) {
   const envPath = path.join(__dirname, '..', '.env');
@@ -213,6 +264,9 @@ async function main() {
     console.log(`${colors.yellow}🔍 Getting ngrok tunnel URL...${colors.reset}`);
     const ngrokUrl = await getNgrokUrl();
 
+    // Update Vite configuration to allow ngrok host
+    updateViteConfig(ngrokUrl);
+
     // Update .env file
     updateEnvFile(ngrokUrl);
 
@@ -229,6 +283,7 @@ async function main() {
   } catch (error) {
     console.error(`${colors.red}❌ Error: ${error.message}${colors.reset}`);
     console.log(`${colors.yellow}💡 Make sure:${colors.reset}`);
+    console.log(`   • NGROK_AUTHTOKEN is set in .env file`);
     console.log(`   • ngrok is installed and authenticated`);
     console.log(`   • Port 8080 is available`);
     console.log(`   • No other ngrok processes are running`);
