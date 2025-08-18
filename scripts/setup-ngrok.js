@@ -247,6 +247,23 @@ function updateEnvFile(ngrokUrl) {
   console.log(`${colors.green}✅ Updated .env file with ngrok URL${colors.reset}`);
 }
 
+// Restart Docker containers to apply new environment variables
+function restartDockerContainers() {
+  return new Promise((resolve, reject) => {
+    console.log(`${colors.yellow}🔄 Restarting Docker containers to apply new environment...${colors.reset}`);
+    
+    exec('docker-compose restart backend frontend', (error, stdout, stderr) => {
+      if (error) {
+        console.log(`${colors.red}❌ Failed to restart containers: ${error.message}${colors.reset}`);
+        reject(error);
+      } else {
+        console.log(`${colors.green}✅ Docker containers restarted with new environment${colors.reset}`);
+        resolve();
+      }
+    });
+  });
+}
+
 // Display access information
 function displayAccessInfo(ngrokUrl) {
   console.log('');
@@ -301,6 +318,13 @@ async function main() {
 
     // Update .env file
     updateEnvFile(ngrokUrl);
+
+    // Restart Docker containers to apply new environment variables
+    await restartDockerContainers();
+
+    // Wait a bit for containers to fully restart
+    console.log(`${colors.yellow}⏳ Waiting for services to be ready...${colors.reset}`);
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     // Display access information
     displayAccessInfo(ngrokUrl);

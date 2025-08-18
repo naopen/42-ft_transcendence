@@ -18,6 +18,8 @@ DOCKER_COMPOSE = docker-compose
 all:
 	@echo "$(GREEN)🚀 Starting ft_transcendence with ngrok (HTTPS)...$(NC)"
 	@pkill -f ngrok || true
+	@echo "$(YELLOW)🔄 Resetting environment to defaults...$(NC)"
+	@node scripts/reset-env.js
 	@$(DOCKER_COMPOSE) down --remove-orphans || true
 	@$(DOCKER_COMPOSE) up --build -d
 	@echo "$(GREEN)✅ Application containers running!$(NC)"
@@ -28,6 +30,8 @@ all:
 http:
 	@echo "$(YELLOW)🛠️ Starting ft_transcendence in HTTP mode (localhost:8080)...$(NC)"
 	@pkill -f ngrok || true
+	@echo "$(YELLOW)🔄 Resetting environment to defaults...$(NC)"
+	@node scripts/reset-env.js
 	@$(DOCKER_COMPOSE) down --remove-orphans || true
 	@$(DOCKER_COMPOSE) up --build -d
 	@echo "$(GREEN)✅ Application running in HTTP mode!$(NC)"

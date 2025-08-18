@@ -1,6 +1,20 @@
 import { io, Socket } from 'socket.io-client';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+// Dynamically get WebSocket URL to avoid caching issues
+const getWsUrl = () => {
+  // Use current domain for WebSocket connection
+  const currentUrl = window.location.origin;
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const host = window.location.host;
+  
+  // If we're in development mode and have VITE_WS_URL set, use it
+  if (import.meta.env.DEV && import.meta.env.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_URL;
+  }
+  
+  // Otherwise, use current domain with appropriate protocol
+  return `${protocol}//${host}`;
+};
 
 let socket: Socket | null = null;
 
@@ -9,7 +23,10 @@ export const connectSocket = (userId: number): Socket => {
     return socket;
   }
 
-  socket = io(WS_URL, {
+  const wsUrl = getWsUrl();
+  console.log('Connecting to WebSocket:', wsUrl);
+  
+  socket = io(wsUrl, {
     withCredentials: true,
     transports: ['websocket'],
   });

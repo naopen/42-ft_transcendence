@@ -49,7 +49,19 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       },
       auth: oauthPlugin.GOOGLE_CONFIGURATION
     },
-    callbackUri: `${process.env.BACKEND_URL}/api/auth/google/callback`
+    // Use dynamic callback URI based on request headers to handle ngrok URL changes
+    callbackUri: (request: any) => {
+      // Try to get the host from X-Forwarded-Host header (set by ngrok)
+      const forwardedHost = request.headers['x-forwarded-host'];
+      const forwardedProto = request.headers['x-forwarded-proto'] || 'http';
+      
+      if (forwardedHost) {
+        return `${forwardedProto}://${forwardedHost}/api/auth/google/callback`;
+      }
+      
+      // Fallback to environment variable
+      return `${process.env.BACKEND_URL}/api/auth/google/callback`;
+    }
   });
 
   // Google OAuth login - redirect to Google

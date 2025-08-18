@@ -1,9 +1,22 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Dynamically get API URL to avoid caching issues
+const getApiUrl = () => {
+  // Use relative URL for API calls to avoid hardcoded domain issues
+  // This way, the API will always use the same domain as the frontend
+  const currentUrl = window.location.origin;
+  
+  // If we're in development mode and have VITE_API_URL set, use it
+  if (import.meta.env.DEV && import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Otherwise, use relative path (works with both ngrok and localhost)
+  return `${currentUrl}/api`;
+};
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: getApiUrl(),
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
