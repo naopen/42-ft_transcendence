@@ -1,5 +1,5 @@
 services:
-  # Backend service
+  # Backend service (Starter)
   - type: web
     name: ft-transcendence-backend
     runtime: node
@@ -30,11 +30,10 @@ services:
       mountPath: /var/data
       sizeGB: 1
 
-  # Frontend service
+  # Frontend service (Free)
   - type: web
     name: ft-transcendence-frontend
     runtime: static
-    plan: starter
     rootDir: packages/frontend
     buildCommand: corepack enable && corepack prepare pnpm@10.19.0 --activate && cd ../.. && pnpm install --frozen-lockfile && cd packages/frontend && pnpm run build
     staticPublishPath: ./dist
