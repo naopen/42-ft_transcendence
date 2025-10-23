@@ -86,7 +86,8 @@ export class OnlinePlayPage {
         text: "Back to Home",
         variant: "secondary",
         size: "md",
-        onClick: () => (window.location.href = "/"),
+        onClick: () =>
+          window.dispatchEvent(new CustomEvent("navigate", { detail: "/" })),
       })
       backContainer.appendChild(backBtn.getElement())
     }
@@ -232,7 +233,12 @@ export class OnlinePlayPage {
 
       // Navigate to game page after a short delay
       setTimeout(() => {
-        window.location.href = `/game/online/${this.gameRoomId}`
+        // Use SPA navigation to avoid disconnecting Socket.IO
+        window.dispatchEvent(
+          new CustomEvent("navigate", {
+            detail: `/game/online/${this.gameRoomId}`,
+          }),
+        )
       }, 2000)
     })
 

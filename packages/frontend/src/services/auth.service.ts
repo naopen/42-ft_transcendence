@@ -1,4 +1,4 @@
-import { apiClient, API_BASE_URL } from "./api"
+import { API_BASE_URL, apiClient } from "./api"
 
 import type { AuthStatus, CurrentUser } from "../types"
 

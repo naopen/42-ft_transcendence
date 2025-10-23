@@ -85,7 +85,7 @@ export class OnlineGamePage {
         this.showError("Opponent disconnected")
         this.cleanup()
         setTimeout(() => {
-          window.location.href = "/"
+          window.dispatchEvent(new CustomEvent("navigate", { detail: "/" }))
         }, 3000)
       })
 
@@ -235,7 +235,7 @@ export class OnlineGamePage {
     const backBtn = this.container.querySelector("#back-home")
     if (backBtn) {
       backBtn.addEventListener("click", () => {
-        window.location.href = "/"
+        window.dispatchEvent(new CustomEvent("navigate", { detail: "/" }))
       })
     }
   }
