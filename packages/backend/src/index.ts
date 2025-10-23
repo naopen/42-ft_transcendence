@@ -60,7 +60,11 @@ async function start() {
         secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // CRITICAL: 'none' for cross-domain in production
+        path: "/",
       },
+      saveUninitialized: false, // Don't create session until something is stored
+      rolling: true, // Reset expiration on every response
     })
 
     // Register Socket.IO
@@ -201,7 +205,7 @@ async function start() {
     }, 30000) // Every 30 seconds
 
     // Start server
-    const port = parseInt(process.env.PORT || "3000", 10)
+    const port = Number.parseInt(process.env.PORT || "3000", 10)
     await fastify.listen({ port, host: "0.0.0.0" })
 
     console.log(`🚀 Backend server running on port ${port}`)

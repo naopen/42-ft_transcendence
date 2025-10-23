@@ -22,10 +22,14 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Google OAuth callback
   fastify.get("/google/callback", async (request, reply) => {
     try {
+      request.log.info("🔵 [OAuth] Starting callback process")
+
       const { token } =
         await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(
           request,
         )
+
+      request.log.info("🔵 [OAuth] Access token obtained")
 
       // Get user info from Google
       const response = await fetch(
@@ -48,6 +52,8 @@ export async function authRoutes(fastify: FastifyInstance) {
         picture?: string
       }
 
+      request.log.info(`🔵 [OAuth] User info fetched: ${googleUser.email}`)
+
       // Find or create user in database
       const user = userService.findOrCreate({
         googleId: googleUser.id,
@@ -56,17 +62,41 @@ export async function authRoutes(fastify: FastifyInstance) {
         avatarUrl: googleUser.picture,
       })
 
-      // Set session
+      request.log.info(`🔵 [OAuth] User found/created: ${user.id}`)
+
+      // Set session data
       request.session.userId = user.id
       request.session.googleId = user.google_id
       request.session.email = user.email
       request.session.displayName = user.display_name
 
+      request.log.info("🔵 [OAuth] Session data set")
+      request.log.info(`🔵 [OAuth] Session ID: ${request.session.sessionId}`)
+      request.log.info(
+        `🔵 [OAuth] Cookie settings: secure=${process.env.NODE_ENV === "production"}, sameSite=${process.env.NODE_ENV === "production" ? "none" : "lax"}`,
+      )
+
+      // Save session explicitly
+      await new Promise<void>((resolve, reject) => {
+        request.session.save((err) => {
+          if (err) {
+            request.log.error("🔴 [OAuth] Session save error:", err)
+            reject(new Error(String(err)))
+          } else {
+            request.log.info("🟢 [OAuth] Session saved successfully")
+            resolve()
+          }
+        })
+      })
+
       // Redirect to frontend
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8080"
+      request.log.info(
+        `🔵 [OAuth] Redirecting to: ${frontendUrl}/?auth=success`,
+      )
       reply.redirect(`${frontendUrl}/?auth=success`)
     } catch (error) {
-      request.log.error(error)
+      request.log.error({ error }, "🔴 [OAuth] Callback error")
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8080"
       reply.redirect(`${frontendUrl}/?auth=error`)
     }
@@ -74,7 +104,13 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // Get current user
   fastify.get("/me", async (request, reply) => {
+    request.log.info("🔵 [Auth] /me endpoint called")
+    request.log.info(`🔵 [Auth] Session ID: ${request.session.sessionId}`)
+    request.log.info(`🔵 [Auth] User ID in session: ${request.session.userId}`)
+    request.log.info(`🔵 [Auth] Cookies: ${JSON.stringify(request.cookies)}`)
+
     if (!request.session.userId) {
+      request.log.warn("🟡 [Auth] No userId in session")
       return reply.status(401).send({
         error: "Not authenticated",
       })
@@ -82,13 +118,15 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     try {
       const user = userService.getUserById(request.session.userId)
+      request.log.info(`🟢 [Auth] User found: ${user.email}`)
       return {
         id: user.id,
         email: user.email,
         displayName: user.display_name,
         avatarUrl: user.avatar_url,
       }
-    } catch {
+    } catch (error) {
+      request.log.error({ error }, "🔴 [Auth] Error fetching user")
       return reply.status(401).send({
         error: "Invalid session",
       })
@@ -105,6 +143,10 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // Check authentication status
   fastify.get("/status", async (request, _reply) => {
+    request.log.info("🔵 [Auth] /status endpoint called")
+    request.log.info(`🔵 [Auth] Session ID: ${request.session.sessionId}`)
+    request.log.info(`🔵 [Auth] User ID in session: ${request.session.userId}`)
+
     return {
       authenticated: !!request.session.userId,
       user: request.session.userId
@@ -113,6 +155,11 @@ export async function authRoutes(fastify: FastifyInstance) {
             displayName: request.session.displayName,
           }
         : null,
+      debug: {
+        sessionId: request.session.sessionId,
+        hasUserId: !!request.session.userId,
+        cookies: Object.keys(request.cookies),
+      },
     }
   })
 }
