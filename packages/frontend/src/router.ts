@@ -34,9 +34,11 @@ export class Router {
     // Handle link clicks
     document.addEventListener("click", (e) => {
       const target = e.target as HTMLElement
-      if (target.matches("[data-link]")) {
+      // Find the closest ancestor with data-link attribute
+      const link = target.closest("[data-link]") as HTMLAnchorElement
+      if (link) {
         e.preventDefault()
-        const href = target.getAttribute("href")
+        const href = link.getAttribute("href")
         if (href) {
           this.navigateTo(href)
         }
