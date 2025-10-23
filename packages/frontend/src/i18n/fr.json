@@ -60,7 +60,7 @@
       "title": "Créer un Tournoi",
       "description": "Entrez les noms des joueurs pour démarrer un tournoi local (3-16 joueurs)",
       "tournamentName": "Nom du Tournoi",
-      "tournamentNamePlaceholder": "Mon Super Tournoi",
+      "tournamentNamePlaceholder": "Entrez le nom du tournoi",
       "playersTitle": "Joueurs",
       "playerLabel": "Joueur",
       "playerPlaceholder": "Entrez le nom du joueur",

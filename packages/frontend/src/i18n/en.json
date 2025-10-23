@@ -60,7 +60,7 @@
       "title": "Create Tournament",
       "description": "Enter player names to start a local tournament (3-16 players)",
       "tournamentName": "Tournament Name",
-      "tournamentNamePlaceholder": "My Awesome Tournament",
+      "tournamentNamePlaceholder": "Enter tournament name",
       "playersTitle": "Players",
       "playerLabel": "Player",
       "playerPlaceholder": "Enter player name",

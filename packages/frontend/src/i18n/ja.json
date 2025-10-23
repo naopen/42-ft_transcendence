@@ -60,7 +60,7 @@
       "title": "トーナメント作成",
       "description": "プレイヤー名を入力してローカルトーナメントを開始（3〜16人）",
       "tournamentName": "トーナメント名",
-      "tournamentNamePlaceholder": "私の素晴らしいトーナメント",
+      "tournamentNamePlaceholder": "トーナメント名を入力",
       "playersTitle": "プレイヤー",
       "playerLabel": "プレイヤー",
       "playerPlaceholder": "プレイヤー名を入力",
