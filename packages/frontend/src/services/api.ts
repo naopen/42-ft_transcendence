@@ -7,6 +7,9 @@ if (typeof window !== "undefined" && window.location.protocol === "https:") {
   API_BASE_URL = API_BASE_URL.replace(/^http:/, "https:")
 }
 
+// Export API_BASE_URL for use in other modules
+export { API_BASE_URL }
+
 export interface ApiError {
   code: string
   message: string

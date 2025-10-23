@@ -1,4 +1,4 @@
-import { apiClient } from "./api"
+import { apiClient, API_BASE_URL } from "./api"
 
 import type { AuthStatus, CurrentUser } from "../types"
 
@@ -7,7 +7,7 @@ export class AuthService {
    * Redirect to Google OAuth login
    */
   login(): void {
-    window.location.href = `${apiClient["baseUrl"]}/api/auth/google`
+    window.location.href = `${API_BASE_URL}/api/auth/google`
   }
 
   /**
