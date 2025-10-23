@@ -1,0 +1,242 @@
+{
+  "nav": {
+    "home": "Home",
+    "tournament": "Tournament",
+    "about": "About",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile",
+    "dashboard": "Dashboard"
+  },
+  "home": {
+    "subtitle": "Play 3D Pong with friends online",
+    "welcome": "Welcome",
+    "localTournament": {
+      "title": "Local Tournament",
+      "description": "Play with friends on the same device",
+      "button": "Start Tournament"
+    },
+    "onlinePlay": {
+      "title": "Online Play",
+      "description": "Play against others online",
+      "button": "Find Match",
+      "signInRequired": "Sign In Required"
+    },
+    "features": {
+      "title": "Features",
+      "3dPong": {
+        "title": "3D Pong",
+        "description": "Beautiful 3D graphics powered by Babylon.js"
+      },
+      "tournaments": {
+        "title": "Tournaments",
+        "description": "Compete in local tournaments with friends"
+      },
+      "online": {
+        "title": "Online Multiplayer",
+        "description": "Play against players worldwide in real-time"
+      },
+      "stats": {
+        "title": "Statistics",
+        "description": "Track your performance with detailed analytics"
+      },
+      "i18n": {
+        "title": "Multilingual",
+        "description": "Available in English, Japanese, and French"
+      },
+      "realtime": {
+        "title": "Real-time",
+        "description": "Smooth gameplay with WebSocket technology"
+      }
+    },
+    "auth": {
+      "title": "Sign in to unlock all features",
+      "description": "Get access to online play, statistics, and more",
+      "button": "Sign in with Google"
+    }
+  },
+  "tournament": {
+    "create": {
+      "title": "Create Tournament",
+      "description": "Enter player names to start a local tournament (3-16 players)",
+      "tournamentName": "Tournament Name",
+      "tournamentNamePlaceholder": "My Awesome Tournament",
+      "playersTitle": "Players",
+      "playerLabel": "Player",
+      "playerPlaceholder": "Enter player name",
+      "addPlayer": "+ Add Player",
+      "createButton": "Create Tournament",
+      "minPlayers": "At least 3 players required",
+      "maxPlayers": "Maximum 16 players allowed",
+      "info": {
+        "title": "Tournament Rules",
+        "minPlayers": "Minimum 3 players required",
+        "maxPlayers": "Maximum 16 players allowed",
+        "uniqueNames": "Each player must have a unique name",
+        "sameKeyboard": "Players take turns on the same keyboard"
+      },
+      "errors": {
+        "nameRequired": "Tournament name is required",
+        "aliasRequired": "Player name is required",
+        "aliasTooShort": "Name must be at least 2 characters",
+        "aliasDuplicate": "This name is already taken",
+        "notEnoughPlayers": "At least 3 players required",
+        "createFailed": "Failed to create tournament"
+      },
+      "success": "Tournament created successfully!"
+    },
+    "play": {
+      "loading": "Loading tournament...",
+      "players": "players",
+      "round": "Round",
+      "errors": {
+        "notFound": "Tournament not found",
+        "loadFailed": "Failed to load tournament",
+        "startFailed": "Failed to start tournament",
+        "completeFailed": "Failed to complete match"
+      },
+      "pending": {
+        "title": "Ready to Start",
+        "description": "The tournament bracket is ready. Click the button below to begin the first match!",
+        "startButton": "Start Tournament"
+      },
+      "completed": {
+        "title": "Tournament Complete!",
+        "winner": "Champion",
+        "homeButton": "Back to Home"
+      },
+      "currentMatch": {
+        "title": "Current Match",
+        "playButton": "Play Match"
+      },
+      "bracket": {
+        "title": "Tournament Bracket"
+      },
+      "participants": {
+        "title": "Participants"
+      },
+      "matchModal": {
+        "title": "Match Result",
+        "selectWinner": "Select the winner of this match:"
+      },
+      "messages": {
+        "started": "Tournament started!",
+        "matchCompleted": "Match completed successfully!"
+      }
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed"
+    }
+  },
+  "profile": {
+    "loading": "Loading profile...",
+    "memberSince": "Member since",
+    "viewDashboard": "View Dashboard",
+    "backButton": "Back to Home",
+    "errors": {
+      "notFound": "User not found",
+      "loadFailed": "Failed to load profile"
+    },
+    "stats": {
+      "title": "Statistics",
+      "totalGames": "Total Games",
+      "wins": "Wins",
+      "losses": "Losses",
+      "winRate": "Win Rate"
+    },
+    "recentGames": {
+      "title": "Recent Games",
+      "noGames": "No games played yet",
+      "win": "Win",
+      "loss": "Loss"
+    },
+    "noStats": {
+      "title": "No Statistics Available",
+      "description": "Sign in to view detailed statistics and game history",
+      "signInButton": "Sign in with Google"
+    },
+    "info": {
+      "title": "User Information",
+      "displayName": "Display Name",
+      "joined": "Joined",
+      "totalPoints": "Total Points",
+      "avgDuration": "Avg Game Duration"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Your performance analytics",
+    "loading": "Loading dashboard...",
+    "errors": {
+      "loadFailed": "Failed to load dashboard data",
+      "generic": "An error occurred"
+    },
+    "unauthorized": {
+      "title": "Unauthorized",
+      "description": "You can only view your own dashboard"
+    },
+    "stats": {
+      "totalGames": "Total Games",
+      "winRate": "Win Rate",
+      "totalPoints": "Total Points",
+      "avgDuration": "Avg Duration"
+    },
+    "charts": {
+      "winLoss": {
+        "title": "Win/Loss Distribution",
+        "wins": "Wins",
+        "losses": "Losses",
+        "draws": "Draws"
+      },
+      "performance": {
+        "title": "Recent Performance",
+        "game": "Game {{number}}",
+        "pointsScored": "Points Scored"
+      }
+    },
+    "history": {
+      "title": "Game History",
+      "noGames": "No games played yet",
+      "win": "Win",
+      "loss": "Loss",
+      "draw": "Draw",
+      "columns": {
+        "date": "Date",
+        "result": "Result",
+        "score": "Score",
+        "duration": "Duration",
+        "type": "Type"
+      },
+      "gameType": {
+        "local": "Local",
+        "online": "Online",
+        "tournament": "Tournament"
+      }
+    }
+  },
+  "game": {
+    "subtitle": "First to score wins!",
+    "startGame": "Start Game",
+    "pause": "Pause",
+    "resume": "Resume",
+    "quit": "Quit",
+    "controls": "Controls",
+    "moveLeft": "Move Left",
+    "moveRight": "Move Right",
+    "confirmQuit": {
+      "title": "Quit Game?",
+      "message": "Are you sure you want to quit? Progress will be lost.",
+      "cancel": "Cancel",
+      "confirm": "Quit"
+    },
+    "gameOver": {
+      "title": "Game Over!",
+      "wins": "Wins!",
+      "finalScore": "Final Score",
+      "playAgain": "Play Again",
+      "exit": "Exit"
+    }
+  }
+}

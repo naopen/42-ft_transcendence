@@ -1,0 +1,242 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "tournament": "Tournoi",
+    "about": "À propos",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "profile": "Profil",
+    "dashboard": "Tableau de bord"
+  },
+  "home": {
+    "subtitle": "Jouez au Pong 3D avec vos amis en ligne",
+    "welcome": "Bienvenue",
+    "localTournament": {
+      "title": "Tournoi Local",
+      "description": "Jouez avec des amis sur le même appareil",
+      "button": "Démarrer le Tournoi"
+    },
+    "onlinePlay": {
+      "title": "Jeu en Ligne",
+      "description": "Affrontez d'autres joueurs en ligne",
+      "button": "Trouver un Match",
+      "signInRequired": "Connexion Requise"
+    },
+    "features": {
+      "title": "Fonctionnalités",
+      "3dPong": {
+        "title": "Pong 3D",
+        "description": "Superbes graphismes 3D propulsés par Babylon.js"
+      },
+      "tournaments": {
+        "title": "Tournois",
+        "description": "Affrontez vos amis en tournois locaux"
+      },
+      "online": {
+        "title": "Multijoueur en Ligne",
+        "description": "Jouez contre des joueurs du monde entier en temps réel"
+      },
+      "stats": {
+        "title": "Statistiques",
+        "description": "Suivez vos performances avec des analyses détaillées"
+      },
+      "i18n": {
+        "title": "Multilingue",
+        "description": "Disponible en anglais, japonais et français"
+      },
+      "realtime": {
+        "title": "Temps Réel",
+        "description": "Gameplay fluide avec la technologie WebSocket"
+      }
+    },
+    "auth": {
+      "title": "Connectez-vous pour débloquer toutes les fonctionnalités",
+      "description": "Accédez au jeu en ligne, aux statistiques et plus encore",
+      "button": "Se connecter avec Google"
+    }
+  },
+  "tournament": {
+    "create": {
+      "title": "Créer un Tournoi",
+      "description": "Entrez les noms des joueurs pour démarrer un tournoi local (3-16 joueurs)",
+      "tournamentName": "Nom du Tournoi",
+      "tournamentNamePlaceholder": "Mon Super Tournoi",
+      "playersTitle": "Joueurs",
+      "playerLabel": "Joueur",
+      "playerPlaceholder": "Entrez le nom du joueur",
+      "addPlayer": "+ Ajouter un Joueur",
+      "createButton": "Créer le Tournoi",
+      "minPlayers": "3 joueurs minimum requis",
+      "maxPlayers": "16 joueurs maximum autorisés",
+      "info": {
+        "title": "Règles du Tournoi",
+        "minPlayers": "3 joueurs minimum requis",
+        "maxPlayers": "16 joueurs maximum autorisés",
+        "uniqueNames": "Chaque joueur doit avoir un nom unique",
+        "sameKeyboard": "Les joueurs jouent à tour de rôle sur le même clavier"
+      },
+      "errors": {
+        "nameRequired": "Le nom du tournoi est requis",
+        "aliasRequired": "Le nom du joueur est requis",
+        "aliasTooShort": "Le nom doit contenir au moins 2 caractères",
+        "aliasDuplicate": "Ce nom est déjà pris",
+        "notEnoughPlayers": "3 joueurs minimum requis",
+        "createFailed": "Échec de la création du tournoi"
+      },
+      "success": "Tournoi créé avec succès !"
+    },
+    "play": {
+      "loading": "Chargement du tournoi...",
+      "players": "joueurs",
+      "round": "Tour",
+      "errors": {
+        "notFound": "Tournoi introuvable",
+        "loadFailed": "Échec du chargement du tournoi",
+        "startFailed": "Échec du démarrage du tournoi",
+        "completeFailed": "Échec de la fin du match"
+      },
+      "pending": {
+        "title": "Prêt à Commencer",
+        "description": "Le tableau du tournoi est prêt. Cliquez sur le bouton ci-dessous pour commencer le premier match !",
+        "startButton": "Démarrer le Tournoi"
+      },
+      "completed": {
+        "title": "Tournoi Terminé !",
+        "winner": "Champion",
+        "homeButton": "Retour à l'Accueil"
+      },
+      "currentMatch": {
+        "title": "Match Actuel",
+        "playButton": "Jouer le Match"
+      },
+      "bracket": {
+        "title": "Tableau du Tournoi"
+      },
+      "participants": {
+        "title": "Participants"
+      },
+      "matchModal": {
+        "title": "Résultat du Match",
+        "selectWinner": "Sélectionnez le gagnant de ce match :"
+      },
+      "messages": {
+        "started": "Tournoi démarré !",
+        "matchCompleted": "Match terminé avec succès !"
+      }
+    },
+    "status": {
+      "pending": "En Attente",
+      "in_progress": "En Cours",
+      "completed": "Terminé"
+    }
+  },
+  "profile": {
+    "loading": "Chargement du profil...",
+    "memberSince": "Membre depuis",
+    "viewDashboard": "Voir le Tableau de Bord",
+    "backButton": "Retour à l'Accueil",
+    "errors": {
+      "notFound": "Utilisateur introuvable",
+      "loadFailed": "Échec du chargement du profil"
+    },
+    "stats": {
+      "title": "Statistiques",
+      "totalGames": "Parties Totales",
+      "wins": "Victoires",
+      "losses": "Défaites",
+      "winRate": "Taux de Victoire"
+    },
+    "recentGames": {
+      "title": "Parties Récentes",
+      "noGames": "Aucune partie jouée",
+      "win": "Victoire",
+      "loss": "Défaite"
+    },
+    "noStats": {
+      "title": "Aucune Statistique Disponible",
+      "description": "Connectez-vous pour voir les statistiques détaillées et l'historique des parties",
+      "signInButton": "Se connecter avec Google"
+    },
+    "info": {
+      "title": "Informations Utilisateur",
+      "displayName": "Nom d'Affichage",
+      "joined": "Inscrit",
+      "totalPoints": "Points Totaux",
+      "avgDuration": "Durée Moyenne"
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de Bord",
+    "subtitle": "Vos analyses de performance",
+    "loading": "Chargement du tableau de bord...",
+    "errors": {
+      "loadFailed": "Échec du chargement des données",
+      "generic": "Une erreur s'est produite"
+    },
+    "unauthorized": {
+      "title": "Non Autorisé",
+      "description": "Vous ne pouvez voir que votre propre tableau de bord"
+    },
+    "stats": {
+      "totalGames": "Parties Totales",
+      "winRate": "Taux de Victoire",
+      "totalPoints": "Points Totaux",
+      "avgDuration": "Durée Moyenne"
+    },
+    "charts": {
+      "winLoss": {
+        "title": "Distribution Victoires/Défaites",
+        "wins": "Victoires",
+        "losses": "Défaites",
+        "draws": "Égalités"
+      },
+      "performance": {
+        "title": "Performance Récente",
+        "game": "Partie {{number}}",
+        "pointsScored": "Points Marqués"
+      }
+    },
+    "history": {
+      "title": "Historique des Parties",
+      "noGames": "Aucune partie jouée",
+      "win": "Victoire",
+      "loss": "Défaite",
+      "draw": "Égalité",
+      "columns": {
+        "date": "Date",
+        "result": "Résultat",
+        "score": "Score",
+        "duration": "Durée",
+        "type": "Type"
+      },
+      "gameType": {
+        "local": "Local",
+        "online": "En Ligne",
+        "tournament": "Tournoi"
+      }
+    }
+  },
+  "game": {
+    "subtitle": "Le premier à marquer gagne !",
+    "startGame": "Démarrer le Jeu",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "quit": "Quitter",
+    "controls": "Contrôles",
+    "moveLeft": "Déplacer à Gauche",
+    "moveRight": "Déplacer à Droite",
+    "confirmQuit": {
+      "title": "Quitter le Jeu ?",
+      "message": "Êtes-vous sûr de vouloir quitter ? La progression sera perdue.",
+      "cancel": "Annuler",
+      "confirm": "Quitter"
+    },
+    "gameOver": {
+      "title": "Jeu Terminé !",
+      "wins": "Gagne !",
+      "finalScore": "Score Final",
+      "playAgain": "Rejouer",
+      "exit": "Quitter"
+    }
+  }
+}

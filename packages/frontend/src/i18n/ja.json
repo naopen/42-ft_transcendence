@@ -1,0 +1,242 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "tournament": "トーナメント",
+    "about": "概要",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "profile": "プロフィール",
+    "dashboard": "ダッシュボード"
+  },
+  "home": {
+    "subtitle": "友達とオンラインで3D Pongをプレイ",
+    "welcome": "ようこそ",
+    "localTournament": {
+      "title": "ローカルトーナメント",
+      "description": "同じデバイスで友達とプレイ",
+      "button": "トーナメント開始"
+    },
+    "onlinePlay": {
+      "title": "オンライン対戦",
+      "description": "オンラインで他のプレイヤーと対戦",
+      "button": "マッチ検索",
+      "signInRequired": "サインインが必要"
+    },
+    "features": {
+      "title": "機能",
+      "3dPong": {
+        "title": "3D Pong",
+        "description": "Babylon.jsによる美しい3Dグラフィックス"
+      },
+      "tournaments": {
+        "title": "トーナメント",
+        "description": "友達とローカルトーナメントで競う"
+      },
+      "online": {
+        "title": "オンラインマルチプレイ",
+        "description": "世界中のプレイヤーとリアルタイム対戦"
+      },
+      "stats": {
+        "title": "統計",
+        "description": "詳細な分析でパフォーマンスを追跡"
+      },
+      "i18n": {
+        "title": "多言語対応",
+        "description": "英語、日本語、フランス語で利用可能"
+      },
+      "realtime": {
+        "title": "リアルタイム",
+        "description": "WebSocket技術によるスムーズなゲームプレイ"
+      }
+    },
+    "auth": {
+      "title": "すべての機能を利用するにはサインイン",
+      "description": "オンライン対戦、統計などにアクセス",
+      "button": "Googleでサインイン"
+    }
+  },
+  "tournament": {
+    "create": {
+      "title": "トーナメント作成",
+      "description": "プレイヤー名を入力してローカルトーナメントを開始（3〜16人）",
+      "tournamentName": "トーナメント名",
+      "tournamentNamePlaceholder": "私の素晴らしいトーナメント",
+      "playersTitle": "プレイヤー",
+      "playerLabel": "プレイヤー",
+      "playerPlaceholder": "プレイヤー名を入力",
+      "addPlayer": "+ プレイヤー追加",
+      "createButton": "トーナメント作成",
+      "minPlayers": "最低3人のプレイヤーが必要です",
+      "maxPlayers": "最大16人まで",
+      "info": {
+        "title": "トーナメントルール",
+        "minPlayers": "最低3人のプレイヤーが必要",
+        "maxPlayers": "最大16人まで参加可能",
+        "uniqueNames": "各プレイヤーはユニークな名前が必要",
+        "sameKeyboard": "プレイヤーは同じキーボードで交代"
+      },
+      "errors": {
+        "nameRequired": "トーナメント名は必須です",
+        "aliasRequired": "プレイヤー名は必須です",
+        "aliasTooShort": "名前は2文字以上必要です",
+        "aliasDuplicate": "この名前は既に使用されています",
+        "notEnoughPlayers": "最低3人のプレイヤーが必要です",
+        "createFailed": "トーナメントの作成に失敗しました"
+      },
+      "success": "トーナメントが作成されました！"
+    },
+    "play": {
+      "loading": "トーナメント読み込み中...",
+      "players": "人",
+      "round": "ラウンド",
+      "errors": {
+        "notFound": "トーナメントが見つかりません",
+        "loadFailed": "トーナメントの読み込みに失敗しました",
+        "startFailed": "トーナメントの開始に失敗しました",
+        "completeFailed": "試合の完了に失敗しました"
+      },
+      "pending": {
+        "title": "開始準備完了",
+        "description": "トーナメントブラケットの準備ができました。下のボタンをクリックして最初の試合を開始してください！",
+        "startButton": "トーナメント開始"
+      },
+      "completed": {
+        "title": "トーナメント完了！",
+        "winner": "チャンピオン",
+        "homeButton": "ホームに戻る"
+      },
+      "currentMatch": {
+        "title": "現在の試合",
+        "playButton": "試合を開始"
+      },
+      "bracket": {
+        "title": "トーナメントブラケット"
+      },
+      "participants": {
+        "title": "参加者"
+      },
+      "matchModal": {
+        "title": "試合結果",
+        "selectWinner": "この試合の勝者を選択："
+      },
+      "messages": {
+        "started": "トーナメントが開始されました！",
+        "matchCompleted": "試合が完了しました！"
+      }
+    },
+    "status": {
+      "pending": "待機中",
+      "in_progress": "進行中",
+      "completed": "完了"
+    }
+  },
+  "profile": {
+    "loading": "プロフィール読み込み中...",
+    "memberSince": "登録日",
+    "viewDashboard": "ダッシュボードを表示",
+    "backButton": "ホームに戻る",
+    "errors": {
+      "notFound": "ユーザーが見つかりません",
+      "loadFailed": "プロフィールの読み込みに失敗しました"
+    },
+    "stats": {
+      "title": "統計",
+      "totalGames": "総試合数",
+      "wins": "勝利",
+      "losses": "敗北",
+      "winRate": "勝率"
+    },
+    "recentGames": {
+      "title": "最近の試合",
+      "noGames": "まだ試合がありません",
+      "win": "勝利",
+      "loss": "敗北"
+    },
+    "noStats": {
+      "title": "統計情報がありません",
+      "description": "詳細な統計と試合履歴を見るにはサインイン",
+      "signInButton": "Googleでサインイン"
+    },
+    "info": {
+      "title": "ユーザー情報",
+      "displayName": "表示名",
+      "joined": "登録日",
+      "totalPoints": "総得点",
+      "avgDuration": "平均試合時間"
+    }
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "subtitle": "パフォーマンス分析",
+    "loading": "ダッシュボード読み込み中...",
+    "errors": {
+      "loadFailed": "ダッシュボードデータの読み込みに失敗しました",
+      "generic": "エラーが発生しました"
+    },
+    "unauthorized": {
+      "title": "権限がありません",
+      "description": "自分のダッシュボードのみ表示できます"
+    },
+    "stats": {
+      "totalGames": "総試合数",
+      "winRate": "勝率",
+      "totalPoints": "総得点",
+      "avgDuration": "平均時間"
+    },
+    "charts": {
+      "winLoss": {
+        "title": "勝敗分布",
+        "wins": "勝利",
+        "losses": "敗北",
+        "draws": "引き分け"
+      },
+      "performance": {
+        "title": "最近のパフォーマンス",
+        "game": "試合{{number}}",
+        "pointsScored": "獲得得点"
+      }
+    },
+    "history": {
+      "title": "試合履歴",
+      "noGames": "まだ試合がありません",
+      "win": "勝利",
+      "loss": "敗北",
+      "draw": "引き分け",
+      "columns": {
+        "date": "日付",
+        "result": "結果",
+        "score": "スコア",
+        "duration": "時間",
+        "type": "タイプ"
+      },
+      "gameType": {
+        "local": "ローカル",
+        "online": "オンライン",
+        "tournament": "トーナメント"
+      }
+    }
+  },
+  "game": {
+    "subtitle": "先に得点した方が勝利！",
+    "startGame": "ゲーム開始",
+    "pause": "一時停止",
+    "resume": "再開",
+    "quit": "終了",
+    "controls": "操作方法",
+    "moveLeft": "左移動",
+    "moveRight": "右移動",
+    "confirmQuit": {
+      "title": "ゲームを終了しますか？",
+      "message": "本当に終了しますか？進行状況は失われます。",
+      "cancel": "キャンセル",
+      "confirm": "終了"
+    },
+    "gameOver": {
+      "title": "ゲームオーバー！",
+      "wins": "の勝利！",
+      "finalScore": "最終スコア",
+      "playAgain": "もう一度プレイ",
+      "exit": "終了"
+    }
+  }
+}

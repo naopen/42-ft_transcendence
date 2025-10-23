@@ -1,0 +1,37 @@
+{
+  "name": "ft-transcendence",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.19.0",
+  "scripts": {
+    "dev": "pnpm run --parallel --filter backend dev --filter frontend dev",
+    "build": "pnpm run --filter backend build && pnpm run --filter frontend build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prettier": "prettier --write .",
+    "typecheck": "pnpm run --filter backend typecheck && pnpm run --filter frontend typecheck"
+  },
+  "keywords": [
+    "pong",
+    "fastify",
+    "babylonjs",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "@stylistic/eslint-plugin": "^5.5.0",
+    "@types/node": "^20.14.9",
+    "eslint": "^9.38.0",
+    "eslint-import-resolver-node": "^0.3.9",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.4.0",
+    "jiti": "^2.4.2",
+    "prettier": "^3.6.2",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.46.2"
+  }
+}
