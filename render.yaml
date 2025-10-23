@@ -4,7 +4,7 @@ services:
     name: ft-transcendence-backend
     runtime: node
     region: singapore
-    plan: free
+    plan: starter
     rootDir: packages/backend
     buildCommand: corepack enable && corepack prepare pnpm@10.19.0 --activate && cd ../.. && pnpm install --frozen-lockfile && cd packages/backend && pnpm run build
     startCommand: pnpm start
@@ -34,8 +34,7 @@ services:
   - type: web
     name: ft-transcendence-frontend
     runtime: static
-    region: singapore
-    plan: free
+    plan: starter
     rootDir: packages/frontend
     buildCommand: corepack enable && corepack prepare pnpm@10.19.0 --activate && cd ../.. && pnpm install --frozen-lockfile && cd packages/frontend && pnpm run build
     staticPublishPath: ./dist
