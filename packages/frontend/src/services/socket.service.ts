@@ -175,12 +175,20 @@ export class SocketService {
    */
   sendReady(): void {
     if (!this.socket) {
+      console.error("[Socket.IO] Cannot send ready - socket not connected")
+      throw new Error("Socket not connected")
+    }
+
+    if (!this.socket.connected) {
+      console.error(
+        "[Socket.IO] Cannot send ready - socket exists but not connected",
+      )
       throw new Error("Socket not connected")
     }
 
     try {
       this.socket.emit("ready")
-      console.log("[Socket.IO] Sent ready signal")
+      console.log("[Socket.IO] ✅ Sent ready signal")
     } catch (error) {
       console.error("[Socket.IO] Error sending ready:", error)
       throw error

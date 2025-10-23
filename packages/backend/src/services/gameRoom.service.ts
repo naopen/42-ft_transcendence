@@ -137,14 +137,27 @@ export class GameRoomManager {
   setPlayerReady(userId: number): void {
     const room = this.getRoomByPlayer(userId)
     if (!room) {
+      console.log(
+        `[GameRoom] Player ${userId} tried to set ready but no room found`,
+      )
       return
     }
 
     if (room.player1.userId === userId) {
       room.player1.isReady = true
+      console.log(
+        `[GameRoom] Player 1 (${room.player1.userName}) is ready in room ${room.id}`,
+      )
     } else if (room.player2.userId === userId) {
       room.player2.isReady = true
+      console.log(
+        `[GameRoom] Player 2 (${room.player2.userName}) is ready in room ${room.id}`,
+      )
     }
+
+    console.log(
+      `[GameRoom] Room ${room.id} ready status: P1=${room.player1.isReady}, P2=${room.player2.isReady}`,
+    )
 
     // If both players ready, start game
     if (room.player1.isReady && room.player2.isReady && !room.gameStarted) {

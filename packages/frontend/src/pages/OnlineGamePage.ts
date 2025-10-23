@@ -38,17 +38,21 @@ export class OnlineGamePage {
 
   private setupSocketConnection(userId: number, userName: string): void {
     try {
-      // Connect to Socket.IO server
+      // Connect to Socket.IO server if not already connected
       if (!socketService.isConnected()) {
         socketService.connect(userId, userName)
-      }
 
-      // Wait for connection
-      socketService.on("connected", () => {
-        console.log("[OnlineGamePage] Connected to server")
-        // Send ready signal
+        // Wait for connection, then send ready signal
+        socketService.on("connected", () => {
+          console.log("[OnlineGamePage] Connected to server")
+          // Send ready signal
+          socketService.sendReady()
+        })
+      } else {
+        // Already connected, send ready signal immediately
+        console.log("[OnlineGamePage] Already connected, sending ready signal")
         socketService.sendReady()
-      })
+      }
 
       // Game start event
       socketService.on("gameStart", (data) => {

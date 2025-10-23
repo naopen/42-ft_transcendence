@@ -175,6 +175,9 @@ async function start() {
 
       socket.on("ready", () => {
         try {
+          console.log(
+            `[Socket.IO] Player ${socket.data.userName} (${socket.data.userId}) sent ready signal`,
+          )
           const gameRoomManager = matchmakingService.gameRoomManager
           gameRoomManager.setPlayerReady(socket.data.userId)
         } catch (error) {
