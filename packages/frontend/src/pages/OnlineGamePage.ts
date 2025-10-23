@@ -1,3 +1,5 @@
+import { Button } from "../components/Button"
+import { Modal } from "../components/Modal"
 import { PongEngine } from "../game/PongEngine"
 import { i18n } from "../i18n"
 import { socketService } from "../services/socket.service"
@@ -79,9 +81,10 @@ export class OnlineGamePage {
       socketService.on("gameEnd", (data) => {
         console.log("[OnlineGamePage] Game ended:", data)
         if (this.engine) {
+          // Update engine state with final scores
           this.engine.handleServerGameEnd(data.winnerId, data.finalScore)
+          // Note: cleanup() will be called when modal is closed
         }
-        this.cleanup()
       })
 
       // Opponent disconnected
@@ -118,9 +121,9 @@ export class OnlineGamePage {
       isPlayer1: this.isPlayer1,
       maxScore: 11,
       onScoreUpdate: (p1Score, p2Score) => this.updateScore(p1Score, p2Score),
-      onGameEnd: () => {
-        // Game end is handled by server
-        this.cleanup()
+      onGameEnd: (winnerId: 1 | 2) => {
+        // Show game end modal with winner info
+        this.showGameEndModal(winnerId)
       },
     })
 
@@ -224,6 +227,65 @@ export class OnlineGamePage {
     this.container.appendChild(controlsInfo)
   }
 
+  private showGameEndModal(winnerId: 1 | 2): void {
+    // Determine if the current player won
+    const didIWin =
+      (this.isPlayer1 && winnerId === 1) || (!this.isPlayer1 && winnerId === 2)
+    const winnerName = winnerId === 1 ? this.player1Name : this.player2Name
+
+    // Get final scores
+    const finalState = this.engine?.getState()
+    const finalScore = finalState
+      ? `${finalState.player1Score} - ${finalState.player2Score}`
+      : "N/A"
+
+    // Create modal with similar style to GamePage
+    const titleEmoji = didIWin ? "🏆" : "😔"
+    const contentEmoji = didIWin ? "🎉" : "💔"
+    const titleColor = didIWin ? "text-green-400" : "text-red-400"
+
+    const modal = new Modal({
+      title: `${titleEmoji} ${i18n.t("game.gameOver.title") || "Game Over!"}`,
+      content: `
+        <div class="text-center py-8">
+          <div class="text-6xl mb-6">${contentEmoji}</div>
+          <h2 class="text-3xl font-bold mb-4 ${titleColor}">
+            ${winnerName} ${i18n.t("game.gameOver.wins") || "Wins!"}
+          </h2>
+          <p class="text-xl text-gray-300">${i18n.t("game.gameOver.finalScore") || "Final Score"}:</p>
+          <p class="text-2xl font-bold mt-2">${finalScore}</p>
+        </div>
+      `,
+      footer: [
+        new Button({
+          text: i18n.t("game.gameOver.playAgain") || "Play Again",
+          variant: "primary",
+          onClick: () => {
+            modal.close()
+            this.cleanup()
+            globalThis.dispatchEvent(
+              new CustomEvent("navigate", { detail: "/online-play" }),
+            )
+          },
+        }).getElement(),
+        new Button({
+          text: i18n.t("game.gameOver.exit") || "Exit",
+          variant: "secondary",
+          onClick: () => {
+            modal.close()
+            this.cleanup()
+            globalThis.dispatchEvent(
+              new CustomEvent("navigate", { detail: "/" }),
+            )
+          },
+        }).getElement(),
+      ],
+      closeOnOverlay: false,
+    })
+
+    modal.open()
+  }
+
   private showError(message: string): void {
     this.container.innerHTML = `
       <div class="text-center py-20">
@@ -239,7 +301,7 @@ export class OnlineGamePage {
     const backBtn = this.container.querySelector("#back-home")
     if (backBtn) {
       backBtn.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("navigate", { detail: "/" }))
+        globalThis.dispatchEvent(new CustomEvent("navigate", { detail: "/" }))
       })
     }
   }
