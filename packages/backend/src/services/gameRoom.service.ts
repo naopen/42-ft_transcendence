@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from "uuid"
 
+import { gameService } from "./game.service"
+
 import type {
   ClientToServerEvents,
   GameState,
@@ -36,6 +38,8 @@ interface GameRoom {
     velocityZ: number
   }
   gameStarted: boolean
+  gameSessionId: number | null
+  startTime: number | null
   lastUpdate: number
 }
 
@@ -87,6 +91,8 @@ export class GameRoomManager {
         velocityZ: 0,
       },
       gameStarted: false,
+      gameSessionId: null,
+      startTime: null,
       lastUpdate: Date.now(),
     }
 
@@ -151,6 +157,22 @@ export class GameRoomManager {
    */
   private startGame(room: GameRoom): void {
     room.gameStarted = true
+    room.startTime = Date.now()
+
+    // Create game session in database
+    try {
+      const session = gameService.createGameSession(
+        "online",
+        room.player1.userId,
+        room.player2.userId,
+      )
+      room.gameSessionId = session.id
+      console.log(
+        `[GameRoom] Created game session ${session.id} for room ${room.id}`,
+      )
+    } catch (error) {
+      console.error("[GameRoom] Failed to create game session:", error)
+    }
 
     // Reset ball
     room.ball = {
@@ -334,6 +356,24 @@ export class GameRoomManager {
       room.player1.score > room.player2.score
         ? room.player1.userId
         : room.player2.userId
+
+    // Save game result to database
+    if (room.gameSessionId && room.startTime) {
+      try {
+        const duration = Math.floor((Date.now() - room.startTime) / 1000) // in seconds
+        gameService.completeGameSession(
+          room.gameSessionId,
+          room.player1.score,
+          room.player2.score,
+          duration,
+        )
+        console.log(
+          `[GameRoom] Saved game session ${room.gameSessionId} to database`,
+        )
+      } catch (error) {
+        console.error("[GameRoom] Failed to save game session:", error)
+      }
+    }
 
     this.io.to(room.id).emit("gameEnd", {
       winnerId,

@@ -214,7 +214,8 @@
         "online": "En Ligne",
         "tournament": "Tournoi"
       }
-    }
+    },
+    "viewFullHistory": "Voir l'Historique Complet des Matchs"
   },
   "game": {
     "subtitle": "Le premier à marquer gagne !",

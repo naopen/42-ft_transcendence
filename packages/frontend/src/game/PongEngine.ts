@@ -21,6 +21,8 @@ export interface PongGameConfig {
   onScoreUpdate?: (player1Score: number, player2Score: number) => void
   onGameEnd?: (winnerId: 1 | 2) => void
   maxScore?: number
+  mode?: "local" | "online" // local: client-side physics, online: server-authoritative
+  isPlayer1?: boolean // Only for online mode - which player am I?
 }
 
 export interface GameState {
@@ -54,6 +56,8 @@ export class PongEngine {
   // Game config
   private config: PongGameConfig
   private maxScore: number
+  private mode: "local" | "online"
+  private isPlayer1: boolean
 
   // Physics
   private ballVelocity: Vector3 = new Vector3(0, 0, 0)
@@ -71,6 +75,8 @@ export class PongEngine {
   constructor(config: PongGameConfig) {
     this.config = config
     this.maxScore = config.maxScore || 11
+    this.mode = config.mode || "local"
+    this.isPlayer1 = config.isPlayer1 ?? true
 
     // Create engine and scene
     this.engine = new Engine(config.canvas, true)
@@ -111,7 +117,12 @@ export class PongEngine {
     // Start render loop
     this.engine.runRenderLoop(() => {
       if (this.state.isPlaying && !this.state.isPaused) {
-        this.updateGame()
+        // In online mode, physics is handled by server, only update paddles
+        if (this.mode === "online") {
+          this.updatePaddlesOnline()
+        } else {
+          this.updateGame()
+        }
       }
       this.scene.render()
     })
@@ -397,6 +408,93 @@ export class PongEngine {
    */
   public getState(): GameState {
     return { ...this.state }
+  }
+
+  /**
+   * Update paddles in online mode (only local player's paddle)
+   */
+  private updatePaddlesOnline(): void {
+    const deltaX = this.PADDLE_SPEED
+    const maxX = this.FIELD_WIDTH / 2 - 1
+
+    // Only control your own paddle
+    const myPaddle = this.isPlayer1 ? this.paddle1 : this.paddle2
+    const leftKey = this.isPlayer1 ? "a" : "arrowleft"
+    const rightKey = this.isPlayer1 ? "d" : "arrowright"
+
+    if (this.keys[leftKey] && myPaddle.position.x > -maxX) {
+      myPaddle.position.x -= deltaX
+    }
+    if (this.keys[rightKey] && myPaddle.position.x < maxX) {
+      myPaddle.position.x += deltaX
+    }
+  }
+
+  /**
+   * Get current paddle X position (for sending to server in online mode)
+   */
+  public getCurrentPaddlePosition(): number {
+    const myPaddle = this.isPlayer1 ? this.paddle1 : this.paddle2
+    return myPaddle.position.x
+  }
+
+  /**
+   * Update game state from server (online mode only)
+   */
+  public updateFromServer(serverState: {
+    ball: { x: number; y: number; z: number }
+    player1: { x: number; score: number }
+    player2: { x: number; score: number }
+  }): void {
+    if (this.mode !== "online") {
+      return
+    }
+
+    // Update ball position
+    this.ball.position.x = serverState.ball.x
+    this.ball.position.y = serverState.ball.y
+    this.ball.position.z = serverState.ball.z
+
+    // Update opponent's paddle (server has authority)
+    if (this.isPlayer1) {
+      this.paddle2.position.x = serverState.player2.x
+    } else {
+      this.paddle1.position.x = serverState.player1.x
+    }
+
+    // Update scores if changed
+    if (
+      this.state.player1Score !== serverState.player1.score ||
+      this.state.player2Score !== serverState.player2.score
+    ) {
+      this.state.player1Score = serverState.player1.score
+      this.state.player2Score = serverState.player2.score
+
+      if (this.config.onScoreUpdate) {
+        this.config.onScoreUpdate(
+          serverState.player1.score,
+          serverState.player2.score,
+        )
+      }
+    }
+  }
+
+  /**
+   * Handle game end from server (online mode)
+   */
+  public handleServerGameEnd(
+    winnerId: number,
+    finalScore: {
+      player1: number
+      player2: number
+    },
+  ): void {
+    // Determine winner (1 or 2) based on final scores
+    const winner: 1 | 2 = finalScore.player1 > finalScore.player2 ? 1 : 2
+
+    this.state.player1Score = finalScore.player1
+    this.state.player2Score = finalScore.player2
+    this.endGame(winner)
   }
 
   /**

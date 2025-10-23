@@ -3,7 +3,10 @@ import {
   BarElement,
   CategoryScale,
   Chart,
+  DoughnutController,
+  Filler,
   Legend,
+  LineController,
   LineElement,
   LinearScale,
   PointElement,
@@ -27,6 +30,9 @@ Chart.register(
   LineElement,
   PointElement,
   ArcElement,
+  DoughnutController,
+  LineController,
+  Filler,
   Title,
   Tooltip,
   Legend,
@@ -135,6 +141,10 @@ export class DashboardPage {
     // Game History Table
     const historySection = this.createGameHistoryTable()
     this.container.appendChild(historySection)
+
+    // Link to Full Match History
+    const matchHistoryLink = this.createMatchHistoryLink()
+    this.container.appendChild(matchHistoryLink)
   }
 
   private createStatsGrid(): HTMLElement {
@@ -300,6 +310,25 @@ export class DashboardPage {
 
     card.setContent(canvas)
     return card.getElement()
+  }
+
+  private createMatchHistoryLink(): HTMLElement {
+    const container = document.createElement("div")
+    container.className = "text-center mt-8"
+
+    const link = document.createElement("a")
+    link.href = `/match-history/${this.userId}`
+    link.setAttribute("data-link", "")
+    link.className =
+      "inline-flex items-center gap-2 bg-42-accent hover:bg-42-accent-dark text-white px-6 py-3 rounded-lg transition-colors font-medium"
+    link.innerHTML = `
+      <span>📊</span>
+      <span>${i18n.t("dashboard.viewFullHistory") || "View Full Match History"}</span>
+      <span>→</span>
+    `
+
+    container.appendChild(link)
+    return container
   }
 
   private createGameHistoryTable(): HTMLElement {

@@ -214,7 +214,8 @@
         "online": "Online",
         "tournament": "Tournament"
       }
-    }
+    },
+    "viewFullHistory": "View Full Match History"
   },
   "game": {
     "subtitle": "First to score wins!",

@@ -1,6 +1,7 @@
 import { DashboardPage } from "./pages/DashboardPage"
 import { HomePage } from "./pages/HomePage"
 import { MatchHistoryPage } from "./pages/MatchHistoryPage"
+import { OnlineGamePage } from "./pages/OnlineGamePage"
 import { OnlinePlayPage } from "./pages/OnlinePlayPage"
 import { ProfilePage } from "./pages/ProfilePage"
 import { TournamentCreatePage } from "./pages/TournamentCreatePage"
@@ -95,6 +96,13 @@ export class Router {
     if (matchHistoryMatch) {
       const userId = parseInt(matchHistoryMatch[1], 10)
       page = new MatchHistoryPage(userId)
+    }
+
+    // Online Game page: /game/online/:roomId
+    const onlineGameMatch = path.match(/^\/game\/online\/(.+)$/)
+    if (onlineGameMatch) {
+      const roomId = onlineGameMatch[1]
+      page = new OnlineGamePage(roomId)
     }
 
     // Static routes

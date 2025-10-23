@@ -214,7 +214,8 @@
         "online": "オンライン",
         "tournament": "トーナメント"
       }
-    }
+    },
+    "viewFullHistory": "試合履歴の詳細を見る"
   },
   "game": {
     "subtitle": "先に得点した方が勝利！",
