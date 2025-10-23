@@ -2,20 +2,21 @@ services:
   # Backend service
   - type: web
     name: ft-transcendence-backend
-    env: node
-    region: oregon
-    plan: starter
-    buildCommand: cd packages/backend && npm install && npm run build
-    startCommand: cd packages/backend && npm start
+    runtime: node
+    region: singapore
+    plan: free
+    rootDir: packages/backend
+    buildCommand: corepack enable && corepack prepare pnpm@10.19.0 --activate && cd ../.. && pnpm install --frozen-lockfile && cd packages/backend && pnpm run build
+    startCommand: pnpm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_PATH
         value: /var/data/database.sqlite
       - key: BACKEND_URL
-        value: https://ft-transcendence-backend.onrender.com
+        sync: false
       - key: FRONTEND_URL
-        value: https://ft-transcendence-frontend.onrender.com
+        sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -23,7 +24,7 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: PORT
-        value: 3000
+        value: 10000
     disk:
       name: sqlite-data
       mountPath: /var/data
@@ -32,14 +33,15 @@ services:
   # Frontend service
   - type: web
     name: ft-transcendence-frontend
-    env: static
-    region: oregon
-    plan: starter
-    buildCommand: cd packages/frontend && npm install && npm run build
-    staticPublishPath: ./packages/frontend/dist
+    runtime: static
+    region: singapore
+    plan: free
+    rootDir: packages/frontend
+    buildCommand: corepack enable && corepack prepare pnpm@10.19.0 --activate && cd ../.. && pnpm install --frozen-lockfile && cd packages/frontend && pnpm run build
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        value: https://ft-transcendence-backend.onrender.com
+        sync: false
     routes:
       - type: rewrite
         source: /*
