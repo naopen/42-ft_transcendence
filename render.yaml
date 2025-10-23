@@ -6,7 +6,7 @@ services:
     region: singapore
     plan: starter
     rootDir: packages/backend
-    buildCommand: corepack enable && corepack prepare pnpm@10.19.0 --activate && cd ../.. && pnpm install --frozen-lockfile && cd packages/backend && pnpm run build
+    buildCommand: corepack enable && corepack prepare pnpm@10.19.0 --activate && cd ../.. && pnpm install --frozen-lockfile && pnpm rebuild better-sqlite3 && cd packages/backend && pnpm run build
     startCommand: pnpm start
     envVars:
       - key: NODE_ENV
