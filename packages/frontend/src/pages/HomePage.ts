@@ -117,9 +117,8 @@ export class HomePage {
         text: i18n.t("home.onlinePlay.button"),
         variant: "primary",
         onClick: () => {
-          // TODO: Implement online matchmaking
           window.dispatchEvent(
-            new CustomEvent("navigate", { detail: "/online" }),
+            new CustomEvent("navigate", { detail: "/online-play" }),
           )
         },
       })

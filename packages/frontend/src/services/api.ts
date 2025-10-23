@@ -1,5 +1,11 @@
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+// Detect if we're on HTTPS and construct the backend URL accordingly
+let API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+
+// In production, use HTTPS if the frontend is served over HTTPS
+if (typeof window !== "undefined" && window.location.protocol === "https:") {
+  API_BASE_URL = API_BASE_URL.replace(/^http:/, "https:")
+}
 
 export interface ApiError {
   code: string
@@ -30,13 +36,17 @@ export class ApiClient {
       headers["Content-Type"] = "application/json"
     }
 
+    // Merge headers properly
+    const mergedHeaders: Record<string, string> = { ...headers }
+    if (options.headers) {
+      const optHeaders = options.headers as Record<string, string>
+      Object.assign(mergedHeaders, optHeaders)
+    }
+
     const config: RequestInit = {
       ...options,
       credentials: "include", // Important for session cookies
-      headers: {
-        ...headers,
-        ...options.headers,
-      },
+      headers: mergedHeaders,
     }
 
     try {

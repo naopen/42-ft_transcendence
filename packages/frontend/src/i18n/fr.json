@@ -238,5 +238,78 @@
       "playAgain": "Rejouer",
       "exit": "Quitter"
     }
+  },
+  "onlinePlay": {
+    "title": "Jeu en Ligne",
+    "subtitle": "Trouvez un match et jouez contre d'autres joueurs",
+    "signInRequired": {
+      "title": "Connexion requise",
+      "description": "Vous devez vous connecter pour jouer en ligne",
+      "button": "Se connecter avec Google"
+    },
+    "matchmaking": {
+      "title": "Matchmaking",
+      "idle": {
+        "title": "Prêt à Jouer ?",
+        "description": "Cliquez sur le bouton ci-dessous pour rejoindre la file d'attente et trouver un adversaire",
+        "button": "Trouver un Match"
+      },
+      "searching": {
+        "title": "Recherche d'adversaire...",
+        "description": "En attente d'un autre joueur",
+        "queuePosition": "Joueurs en file d'attente : {{count}}",
+        "cancelButton": "Annuler"
+      },
+      "found": {
+        "title": "Match Trouvé !",
+        "description": "Adversaire : {{opponent}}",
+        "message": "Connexion à la salle de jeu..."
+      }
+    },
+    "errors": {
+      "connectionFailed": "Échec de la connexion au serveur de jeu",
+      "matchmakingFailed": "Échec de l'inscription à la file d'attente",
+      "gameRoomFailed": "Échec de la connexion à la salle de jeu"
+    }
+  },
+  "matchHistory": {
+    "title": "Historique des Matchs",
+    "subtitle": "Afficher les statistiques détaillées pour chaque session de jeu",
+    "loading": "Chargement de l'historique des matchs...",
+    "unauthorized": {
+      "title": "Non Autorisé",
+      "description": "Vous ne pouvez consulter que votre propre historique de matchs"
+    },
+    "errors": {
+      "loadFailed": "Échec du chargement de l'historique des matchs",
+      "generic": "Une erreur s'est produite"
+    },
+    "noMatches": {
+      "title": "Aucun Match pour le Moment",
+      "description": "Commencez à jouer pour voir votre historique de matchs ici"
+    },
+    "result": {
+      "win": "Victoire",
+      "loss": "Défaite",
+      "draw": "Égalité"
+    },
+    "gameType": {
+      "local": "Local",
+      "online": "En Ligne",
+      "tournament": "Tournoi"
+    },
+    "viewDetails": "Voir les Détails",
+    "matchDetails": {
+      "title": "Détails du Match",
+      "gameType": "Type de Jeu",
+      "duration": "Durée",
+      "date": "Date",
+      "time": "Heure"
+    },
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "page": "Page {{page}}"
+    }
   }
 }

@@ -1,5 +1,7 @@
 import { DashboardPage } from "./pages/DashboardPage"
 import { HomePage } from "./pages/HomePage"
+import { MatchHistoryPage } from "./pages/MatchHistoryPage"
+import { OnlinePlayPage } from "./pages/OnlinePlayPage"
 import { ProfilePage } from "./pages/ProfilePage"
 import { TournamentCreatePage } from "./pages/TournamentCreatePage"
 import { TournamentPlayPage } from "./pages/TournamentPlayPage"
@@ -22,6 +24,7 @@ export class Router {
     // Static routes
     this.routes.set("/", () => new HomePage())
     this.routes.set("/tournament/create", () => new TournamentCreatePage())
+    this.routes.set("/online-play", () => new OnlinePlayPage())
 
     // Dynamic routes are handled in navigateTo
   }
@@ -85,6 +88,13 @@ export class Router {
     if (dashboardMatch) {
       const userId = parseInt(dashboardMatch[1], 10)
       page = new DashboardPage(userId)
+    }
+
+    // Match History page: /match-history/:id
+    const matchHistoryMatch = path.match(/^\/match-history\/(\d+)$/)
+    if (matchHistoryMatch) {
+      const userId = parseInt(matchHistoryMatch[1], 10)
+      page = new MatchHistoryPage(userId)
     }
 
     // Static routes

@@ -238,5 +238,78 @@
       "playAgain": "もう一度プレイ",
       "exit": "終了"
     }
+  },
+  "onlinePlay": {
+    "title": "オンライン対戦",
+    "subtitle": "マッチを見つけて他のプレイヤーと対戦",
+    "signInRequired": {
+      "title": "サインインが必要",
+      "description": "オンラインマッチをプレイするにはサインインが必要です",
+      "button": "Googleでサインイン"
+    },
+    "matchmaking": {
+      "title": "マッチメイキング",
+      "idle": {
+        "title": "プレイ準備完了？",
+        "description": "下のボタンをクリックしてマッチメイキングキューに参加し、対戦相手を見つけましょう",
+        "button": "マッチ検索"
+      },
+      "searching": {
+        "title": "対戦相手を検索中...",
+        "description": "他のプレイヤーの参加を待っています",
+        "queuePosition": "キューのプレイヤー数: {{count}}",
+        "cancelButton": "キャンセル"
+      },
+      "found": {
+        "title": "マッチが見つかりました！",
+        "description": "対戦相手: {{opponent}}",
+        "message": "ゲームルームに接続中..."
+      }
+    },
+    "errors": {
+      "connectionFailed": "ゲームサーバーへの接続に失敗しました",
+      "matchmakingFailed": "マッチメイキングキューへの参加に失敗しました",
+      "gameRoomFailed": "ゲームルームへの参加に失敗しました"
+    }
+  },
+  "matchHistory": {
+    "title": "試合履歴",
+    "subtitle": "各ゲームセッションの詳細統計を表示",
+    "loading": "試合履歴を読み込み中...",
+    "unauthorized": {
+      "title": "認証エラー",
+      "description": "自分の試合履歴のみ閲覧できます"
+    },
+    "errors": {
+      "loadFailed": "試合履歴の読み込みに失敗しました",
+      "generic": "エラーが発生しました"
+    },
+    "noMatches": {
+      "title": "まだ試合がありません",
+      "description": "プレイを開始すると、ここに試合履歴が表示されます"
+    },
+    "result": {
+      "win": "勝利",
+      "loss": "敗北",
+      "draw": "引き分け"
+    },
+    "gameType": {
+      "local": "ローカル",
+      "online": "オンライン",
+      "tournament": "トーナメント"
+    },
+    "viewDetails": "詳細を表示",
+    "matchDetails": {
+      "title": "試合詳細",
+      "gameType": "ゲームタイプ",
+      "duration": "試合時間",
+      "date": "日付",
+      "time": "時刻"
+    },
+    "pagination": {
+      "previous": "前へ",
+      "next": "次へ",
+      "page": "ページ {{page}}"
+    }
   }
 }

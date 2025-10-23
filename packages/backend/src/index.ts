@@ -1,9 +1,9 @@
 import cookie from "@fastify/cookie"
 import cors from "@fastify/cors"
 import session from "@fastify/session"
-import websocket from "@fastify/websocket"
 import dotenv from "dotenv"
 import Fastify from "fastify"
+import fastifySocketIO from "fastify-socket.io"
 
 import { initDatabase } from "./config/database"
 import { errorHandler } from "./middleware/error-handler"
@@ -11,6 +11,21 @@ import { authRoutes } from "./routes/auth"
 import { gameRoutes } from "./routes/game"
 import { tournamentRoutes } from "./routes/tournament"
 import { userRoutes } from "./routes/user"
+import { MatchmakingService } from "./services/matchmaking.service"
+
+import type {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  SocketData,
+} from "./types/socket.types"
+import type { Server, Socket } from "socket.io"
+
+type TypedSocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  Record<string, never>,
+  SocketData
+>
 
 dotenv.config()
 
@@ -32,7 +47,7 @@ async function start() {
     await fastify.register(cors, {
       origin:
         process.env.NODE_ENV === "production"
-          ? ["https://your-frontend-url.onrender.com"]
+          ? process.env.FRONTEND_URL || "https://your-frontend-url.onrender.com"
           : ["http://localhost:8080", "http://localhost:5173"],
       credentials: true,
     })
@@ -48,7 +63,18 @@ async function start() {
       },
     })
 
-    await fastify.register(websocket)
+    // Register Socket.IO
+    await fastify.register(fastifySocketIO, {
+      cors: {
+        origin:
+          process.env.NODE_ENV === "production"
+            ? process.env.FRONTEND_URL ||
+              "https://your-frontend-url.onrender.com"
+            : ["http://localhost:8080", "http://localhost:5173"],
+        credentials: true,
+      },
+      transports: ["websocket", "polling"],
+    })
 
     // Health check endpoint
     fastify.get("/health", async () => {
@@ -75,12 +101,112 @@ async function start() {
     await fastify.register(gameRoutes, { prefix: "/api/games" })
     await fastify.register(userRoutes, { prefix: "/api/users" })
 
+    // Initialize Socket.IO services
+    const io = fastify.io as Server<
+      ClientToServerEvents,
+      ServerToClientEvents,
+      Record<string, never>,
+      SocketData
+    >
+
+    const matchmakingService = new MatchmakingService(io)
+
+    // Socket.IO connection handler
+    io.on("connection", (socket: TypedSocket) => {
+      console.log(`[Socket.IO] Client connected: ${socket.id}`)
+
+      // Get session data from handshake
+      const sessionData = socket.handshake.auth
+
+      if (!sessionData.userId || !sessionData.userName) {
+        console.log(
+          `[Socket.IO] Unauthenticated connection attempt: ${socket.id}`,
+        )
+        socket.emit("error", { message: "Authentication required" })
+        socket.disconnect()
+        return
+      }
+
+      // Store user data in socket
+      socket.data.userId = sessionData.userId
+      socket.data.userName = sessionData.userName
+
+      console.log(
+        `[Socket.IO] Authenticated: ${sessionData.userName} (${sessionData.userId})`,
+      )
+
+      // Emit connected event
+      socket.emit("connected", {
+        userId: socket.data.userId,
+        userName: socket.data.userName,
+      })
+
+      // Matchmaking events
+      socket.on("joinQueue", () => {
+        try {
+          matchmakingService.addToQueue(socket)
+        } catch (error) {
+          console.error("[Socket.IO] Error joining queue:", error)
+          socket.emit("error", { message: "Failed to join queue" })
+        }
+      })
+
+      socket.on("leaveQueue", () => {
+        try {
+          matchmakingService.removeFromQueue(socket)
+        } catch (error) {
+          console.error("[Socket.IO] Error leaving queue:", error)
+        }
+      })
+
+      // Game events
+      socket.on("paddleMove", (data: { x: number }) => {
+        try {
+          const gameRoomManager = matchmakingService.gameRoomManager
+          gameRoomManager.updatePaddle(socket.data.userId, data.x)
+        } catch (error) {
+          console.error("[Socket.IO] Error updating paddle:", error)
+        }
+      })
+
+      socket.on("ready", () => {
+        try {
+          const gameRoomManager = matchmakingService.gameRoomManager
+          gameRoomManager.setPlayerReady(socket.data.userId)
+        } catch (error) {
+          console.error("[Socket.IO] Error setting player ready:", error)
+        }
+      })
+
+      // Disconnect handler
+      socket.on("disconnect", () => {
+        console.log(`[Socket.IO] Client disconnected: ${socket.id}`)
+        try {
+          matchmakingService.removeFromQueue(socket)
+          const gameRoomManager = matchmakingService.gameRoomManager
+          gameRoomManager.handleDisconnect(socket.data.userId)
+        } catch (error) {
+          console.error("[Socket.IO] Error handling disconnect:", error)
+        }
+      })
+    })
+
+    // Periodic cleanup of disconnected players
+    setInterval(() => {
+      try {
+        matchmakingService.cleanupQueue()
+      } catch (error) {
+        console.error("[Socket.IO] Error during queue cleanup:", error)
+      }
+    }, 30000) // Every 30 seconds
+
     // Start server
     const port = parseInt(process.env.PORT || "3000", 10)
     await fastify.listen({ port, host: "0.0.0.0" })
 
     console.log(`🚀 Backend server running on port ${port}`)
     console.log(`📚 API Documentation: http://localhost:${port}/api`)
+    console.log(`🎮 Socket.IO server ready for connections`)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)

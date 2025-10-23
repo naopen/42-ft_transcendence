@@ -238,5 +238,78 @@
       "playAgain": "Play Again",
       "exit": "Exit"
     }
+  },
+  "onlinePlay": {
+    "title": "Online Play",
+    "subtitle": "Find a match and play against other players",
+    "signInRequired": {
+      "title": "Sign in required",
+      "description": "You need to sign in to play online matches",
+      "button": "Sign in with Google"
+    },
+    "matchmaking": {
+      "title": "Matchmaking",
+      "idle": {
+        "title": "Ready to Play?",
+        "description": "Click the button below to join the matchmaking queue and find an opponent",
+        "button": "Find Match"
+      },
+      "searching": {
+        "title": "Searching for opponent...",
+        "description": "Waiting for another player to join",
+        "queuePosition": "Players in queue: {{count}}",
+        "cancelButton": "Cancel"
+      },
+      "found": {
+        "title": "Match Found!",
+        "description": "Opponent: {{opponent}}",
+        "message": "Connecting to game room..."
+      }
+    },
+    "errors": {
+      "connectionFailed": "Failed to connect to game server",
+      "matchmakingFailed": "Failed to join matchmaking queue",
+      "gameRoomFailed": "Failed to join game room"
+    }
+  },
+  "matchHistory": {
+    "title": "Match History",
+    "subtitle": "View detailed statistics for each game session",
+    "loading": "Loading match history...",
+    "unauthorized": {
+      "title": "Unauthorized",
+      "description": "You can only view your own match history"
+    },
+    "errors": {
+      "loadFailed": "Failed to load match history",
+      "generic": "An error occurred"
+    },
+    "noMatches": {
+      "title": "No Matches Yet",
+      "description": "Start playing to see your match history here"
+    },
+    "result": {
+      "win": "Victory",
+      "loss": "Defeat",
+      "draw": "Draw"
+    },
+    "gameType": {
+      "local": "Local",
+      "online": "Online",
+      "tournament": "Tournament"
+    },
+    "viewDetails": "View Details",
+    "matchDetails": {
+      "title": "Match Details",
+      "gameType": "Game Type",
+      "duration": "Duration",
+      "date": "Date",
+      "time": "Time"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{page}}"
+    }
   }
 }

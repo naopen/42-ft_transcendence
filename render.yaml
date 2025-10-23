@@ -12,6 +12,10 @@ services:
         value: production
       - key: DATABASE_PATH
         value: /var/data/database.sqlite
+      - key: BACKEND_URL
+        value: https://ft-transcendence-backend.onrender.com
+      - key: FRONTEND_URL
+        value: https://ft-transcendence-frontend.onrender.com
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -33,6 +37,9 @@ services:
     plan: starter
     buildCommand: cd packages/frontend && npm install && npm run build
     staticPublishPath: ./packages/frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://ft-transcendence-backend.onrender.com
     routes:
       - type: rewrite
         source: /*

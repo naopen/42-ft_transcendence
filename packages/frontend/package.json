@@ -20,7 +20,8 @@
     "@babylonjs/core": "^7.31.1",
     "@babylonjs/loaders": "^7.31.1",
     "chart.js": "^4.4.4",
-    "date-fns": "^3.6.0"
+    "date-fns": "^3.6.0",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.9",
