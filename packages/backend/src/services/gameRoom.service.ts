@@ -38,9 +38,11 @@ interface GameRoom {
     velocityZ: number
   }
   gameStarted: boolean
+  gameEnded: boolean
   gameSessionId: number | null
   startTime: number | null
   lastUpdate: number
+  gameLoopInterval: NodeJS.Timeout | null
 }
 
 export class GameRoomManager {
@@ -91,9 +93,11 @@ export class GameRoomManager {
         velocityZ: 0,
       },
       gameStarted: false,
+      gameEnded: false,
       gameSessionId: null,
       startTime: null,
       lastUpdate: Date.now(),
+      gameLoopInterval: null,
     }
 
     this.rooms.set(roomId, room)
@@ -243,7 +247,7 @@ export class GameRoomManager {
     const TICK_INTERVAL = 1000 / TICK_RATE
 
     const gameLoop = setInterval(() => {
-      if (!this.rooms.has(room.id)) {
+      if (!this.rooms.has(room.id) || room.gameEnded) {
         clearInterval(gameLoop)
         return
       }
@@ -272,12 +276,20 @@ export class GameRoomManager {
 
       room.lastUpdate = Date.now()
     }, TICK_INTERVAL)
+
+    // Store interval ID for cleanup
+    room.gameLoopInterval = gameLoop
   }
 
   /**
    * Update game physics (server-authoritative)
    */
   private updateGameState(room: GameRoom): void {
+    // Stop updating if game has ended
+    if (room.gameEnded) {
+      return
+    }
+
     // Update ball position
     room.ball.x += room.ball.velocityX
     room.ball.z += room.ball.velocityZ
@@ -339,6 +351,11 @@ export class GameRoomManager {
    * Handle score update
    */
   private handleScore(room: GameRoom): void {
+    // Don't process score if game has ended
+    if (room.gameEnded) {
+      return
+    }
+
     // Broadcast score update
     this.io.to(room.id).emit("scoreUpdate", {
       player1Score: room.player1.score,
@@ -365,6 +382,21 @@ export class GameRoomManager {
    * End game
    */
   private endGame(room: GameRoom): void {
+    // Prevent multiple calls to endGame
+    if (room.gameEnded) {
+      return
+    }
+
+    // Mark game as ended
+    room.gameEnded = true
+
+    // Stop game loop immediately
+    if (room.gameLoopInterval) {
+      clearInterval(room.gameLoopInterval)
+      room.gameLoopInterval = null
+      console.log(`[GameRoom] Stopped game loop for room ${room.id}`)
+    }
+
     const winnerId =
       room.player1.score > room.player2.score
         ? room.player1.userId
@@ -411,6 +443,12 @@ export class GameRoomManager {
     const room = this.rooms.get(roomId)
     if (!room) {
       return
+    }
+
+    // Stop game loop if still running
+    if (room.gameLoopInterval) {
+      clearInterval(room.gameLoopInterval)
+      room.gameLoopInterval = null
     }
 
     // Remove player mappings
