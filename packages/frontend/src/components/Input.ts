@@ -30,7 +30,8 @@ export class Input {
     // Label
     if (props.label) {
       this.labelElement = document.createElement("label")
-      this.labelElement.className = "block text-sm font-medium text-gray-300 mb-2"
+      this.labelElement.className =
+        "block text-sm font-medium text-gray-300 mb-2"
       this.labelElement.textContent = props.label
       if (props.required) {
         const required = document.createElement("span")

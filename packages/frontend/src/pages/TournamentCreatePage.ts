@@ -90,7 +90,9 @@ export class TournamentCreatePage {
 
     this.playerInputs.forEach((input, index) => {
       // Update the label to reflect the current sequential position
-      input.updateLabel(`${i18n.t("tournament.create.playerLabel")} ${index + 1}`)
+      input.updateLabel(
+        `${i18n.t("tournament.create.playerLabel")} ${index + 1}`,
+      )
 
       const wrapper = document.createElement("div")
       wrapper.className = "flex gap-3 items-end"
