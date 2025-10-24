@@ -97,9 +97,6 @@ export class TournamentService {
       )
       .all(tournamentId) as TournamentParticipant[]
 
-    // Calculate number of rounds needed
-    const _totalRounds = Math.ceil(Math.log2(participants.length))
-
     // First round matches
     const insertMatch = db.prepare(`
       INSERT INTO tournament_matches 
@@ -266,7 +263,7 @@ export class TournamentService {
       `,
       ).run(loserId)
 
-      // Check if we need to create next round match
+      // Check if we need to create next round match or advance bye winners
       const currentRoundMatches = db
         .prepare(
           `
@@ -291,26 +288,30 @@ export class TournamentService {
 
   /**
    * Create matches for the next round
+   * Uses a simple algorithm: get all non-eliminated participants, pair them up
    */
   private createNextRound(tournamentId: number, currentRound: number): void {
-    const winners = db
+    // Get all non-eliminated participants (including those who got a bye in earlier rounds)
+    const allActiveParticipants = db
       .prepare(
         `
-      SELECT winner_id FROM tournament_matches
-      WHERE tournament_id = ? AND round = ? AND winner_id IS NOT NULL
-      ORDER BY match_order
+      SELECT id FROM tournament_participants
+      WHERE tournament_id = ? AND eliminated_at IS NULL
+      ORDER BY id
     `,
       )
-      .all(tournamentId, currentRound) as { winner_id: number }[]
+      .all(tournamentId) as { id: number }[]
 
-    if (winners.length <= 1) {
+    if (allActiveParticipants.length <= 1) {
       // Tournament completed
-      this.completeTournament(tournamentId, winners[0]?.winner_id)
+      if (allActiveParticipants.length === 1) {
+        this.completeTournament(tournamentId, allActiveParticipants[0].id)
+      }
       return
     }
 
     const insertMatch = db.prepare(`
-      INSERT INTO tournament_matches 
+      INSERT INTO tournament_matches
       (tournament_id, round, match_order, participant1_id, participant2_id, status)
       VALUES (?, ?, ?, ?, ?, 'pending')
     `)
@@ -318,16 +319,19 @@ export class TournamentService {
     const nextRound = currentRound + 1
     let matchOrder = 0
 
-    for (let i = 0; i < winners.length; i += 2) {
-      if (i + 1 < winners.length) {
+    // Create matches for pairs of active participants
+    for (let i = 0; i < allActiveParticipants.length; i += 2) {
+      if (i + 1 < allActiveParticipants.length) {
+        // Both participants available - create match
         insertMatch.run(
           tournamentId,
           nextRound,
           matchOrder++,
-          winners[i].winner_id,
-          winners[i + 1].winner_id,
+          allActiveParticipants[i].id,
+          allActiveParticipants[i + 1].id,
         )
       }
+      // If odd number, the last participant waits (gets a bye) until next round completes
     }
   }
 

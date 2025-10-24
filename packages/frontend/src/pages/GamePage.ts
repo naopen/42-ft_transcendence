@@ -256,6 +256,9 @@ export class GamePage {
     const winnerName =
       winner === 1 ? this.config.player1Name : this.config.player2Name
 
+    // For tournament mode, we need to wait for user confirmation before calling the callback
+    const isTournamentMode = !!this.config.onGameEnd
+
     // Show winner modal
     const modal = new Modal({
       title: `🏆 ${i18n.t("game.gameOver.title") || "Game Over!"}`,
@@ -267,33 +270,46 @@ export class GamePage {
           <p class="text-2xl font-bold mt-2">${state.player1Score} - ${state.player2Score}</p>
         </div>
       `,
-      footer: [
-        new Button({
-          text: i18n.t("game.gameOver.playAgain") || "Play Again",
-          variant: "primary",
-          onClick: () => {
-            modal.close()
-            this.startGame()
-          },
-        }).getElement(),
-        new Button({
-          text: i18n.t("game.gameOver.exit") || "Exit",
-          variant: "secondary",
-          onClick: () => {
-            modal.close()
-            this.quit()
-          },
-        }).getElement(),
-      ],
+      footer: isTournamentMode
+        ? [
+            new Button({
+              text: i18n.t("game.gameOver.exit") || "Exit",
+              variant: "primary",
+              onClick: () => {
+                modal.close()
+                // Call onGameEnd callback only after user clicks exit
+                if (this.config.onGameEnd) {
+                  this.config.onGameEnd(
+                    winner,
+                    state.player1Score,
+                    state.player2Score,
+                  )
+                }
+              },
+            }).getElement(),
+          ]
+        : [
+            new Button({
+              text: i18n.t("game.gameOver.playAgain") || "Play Again",
+              variant: "primary",
+              onClick: () => {
+                modal.close()
+                this.startGame()
+              },
+            }).getElement(),
+            new Button({
+              text: i18n.t("game.gameOver.exit") || "Exit",
+              variant: "secondary",
+              onClick: () => {
+                modal.close()
+                this.quit()
+              },
+            }).getElement(),
+          ],
       closeOnOverlay: false,
     })
 
     modal.open()
-
-    // Call onGameEnd callback
-    if (this.config.onGameEnd) {
-      this.config.onGameEnd(winner, state.player1Score, state.player2Score)
-    }
 
     // Reset UI
     this.startButton.setDisabled(false)
