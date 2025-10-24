@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify"
 import { z } from "zod"
 
-import { optionalAuth } from "../middleware/auth.middleware"
+import { getUserId, optionalAuth } from "../middleware/auth.middleware"
 import {
   schemas,
   validateBody,
@@ -31,7 +31,7 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
       const { name, aliases } = request.body as z.infer<
         typeof createTournamentSchema
       >
-      const userId = request.session.userId
+      const userId = getUserId(request)
 
       const tournament = tournamentService.createTournament(
         name,

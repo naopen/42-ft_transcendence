@@ -53,7 +53,21 @@ export class DashboardPage {
   }
 
   private async loadData(): Promise<void> {
-    const authState = authStore.getState()
+    // Wait for auth initialization if still loading
+    let authState = authStore.getState()
+    if (authState.isLoading) {
+      this.renderLoading()
+      // Wait for auth to complete by subscribing temporarily
+      await new Promise<void>((resolve) => {
+        const unsubscribe = authStore.subscribe((state) => {
+          if (!state.isLoading) {
+            unsubscribe()
+            resolve()
+          }
+        })
+      })
+      authState = authStore.getState()
+    }
 
     // Check if user can view this dashboard
     if (!authState.isAuthenticated || authState.user?.id !== this.userId) {

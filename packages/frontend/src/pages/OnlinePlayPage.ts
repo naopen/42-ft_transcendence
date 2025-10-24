@@ -20,8 +20,22 @@ export class OnlinePlayPage {
     this.checkAuth()
   }
 
-  private checkAuth(): void {
-    const authState = authStore.getState()
+  private async checkAuth(): Promise<void> {
+    // Wait for auth initialization if still loading
+    let authState = authStore.getState()
+    if (authState.isLoading) {
+      this.renderLoading()
+      // Wait for auth to complete by subscribing temporarily
+      await new Promise<void>((resolve) => {
+        const unsubscribe = authStore.subscribe((state) => {
+          if (!state.isLoading) {
+            unsubscribe()
+            resolve()
+          }
+        })
+      })
+      authState = authStore.getState()
+    }
 
     if (!authState.isAuthenticated || !authState.user) {
       this.renderSignInRequired()
@@ -40,6 +54,15 @@ export class OnlinePlayPage {
       Alert.error(error.message || i18n.t("onlinePlay.errors.connectionFailed"))
       this.renderError()
     }
+  }
+
+  private renderLoading(): void {
+    this.container.innerHTML = `
+      <div class="text-center py-20">
+        <div class="animate-spin inline-block w-12 h-12 border-4 border-42-accent border-t-transparent rounded-full"></div>
+        <p class="text-gray-300 mt-4">${i18n.t("common.loading")}</p>
+      </div>
+    `
   }
 
   private renderSignInRequired(): void {

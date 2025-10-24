@@ -27,8 +27,34 @@ export class OnlineGamePage {
     this.canvas.width = 1280
     this.canvas.height = 720
 
+    // Initialize asynchronously
+    this.initialize()
+  }
+
+  private async initialize(): Promise<void> {
+    // Wait for auth initialization if still loading
+    let authState = authStore.getState()
+    if (authState.isLoading) {
+      // Show loading state
+      this.container.innerHTML = `
+        <div class="text-center py-20">
+          <div class="animate-spin inline-block w-12 h-12 border-4 border-42-accent border-t-transparent rounded-full"></div>
+          <p class="text-gray-300 mt-4">Loading...</p>
+        </div>
+      `
+      // Wait for auth to complete by subscribing temporarily
+      await new Promise<void>((resolve) => {
+        const unsubscribe = authStore.subscribe((state) => {
+          if (!state.isLoading) {
+            unsubscribe()
+            resolve()
+          }
+        })
+      })
+      authState = authStore.getState()
+    }
+
     // Check authentication
-    const authState = authStore.getState()
     if (!authState.isAuthenticated || !authState.user) {
       this.showError("You must be logged in to play online")
       return
