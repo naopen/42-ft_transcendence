@@ -15,8 +15,8 @@ COPY package.json pnpm-lock.yaml .npmrc ./
 # Copy backend package files
 COPY packages/backend/package.json ./packages/backend/
 
-# Install dependencies (allow build scripts for native modules like better-sqlite3)
-RUN pnpm install --frozen-lockfile --dangerously-allow-all-builds
+# Install dependencies (respects onlyBuiltDependencies from pnpm-workspace.yaml)
+RUN pnpm install --frozen-lockfile
 
 # Copy backend source code
 COPY packages/backend ./packages/backend
