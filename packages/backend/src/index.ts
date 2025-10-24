@@ -1,5 +1,6 @@
 import cookie from "@fastify/cookie"
 import cors from "@fastify/cors"
+import jwt from "@fastify/jwt"
 import session from "@fastify/session"
 import dotenv from "dotenv"
 import Fastify from "fastify"
@@ -53,6 +54,17 @@ async function start() {
     })
 
     await fastify.register(cookie)
+
+    // Register JWT for token-based authentication
+    await fastify.register(jwt, {
+      secret:
+        process.env.JWT_SECRET ||
+        process.env.SESSION_SECRET ||
+        "change-this-secret",
+      sign: {
+        expiresIn: "7d", // Token valid for 7 days
+      },
+    })
 
     await fastify.register(session, {
       secret: process.env.SESSION_SECRET || "change-this-secret",

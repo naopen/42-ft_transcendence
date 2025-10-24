@@ -22,7 +22,7 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Google OAuth callback
   fastify.get("/google/callback", async (request, reply) => {
     try {
-      const { token } =
+      const { token: oauthToken } =
         await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(
           request,
         )
@@ -32,7 +32,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         "https://www.googleapis.com/oauth2/v2/userinfo",
         {
           headers: {
-            Authorization: `Bearer ${token.access_token}`,
+            Authorization: `Bearer ${oauthToken.access_token}`,
           },
         },
       )
@@ -82,9 +82,16 @@ export async function authRoutes(fastify: FastifyInstance) {
         })
       })
 
-      // Redirect to frontend
+      // Generate JWT token for cross-domain authentication
+      const token = fastify.jwt.sign({
+        userId: user.id,
+        email: user.email,
+        displayName: user.display_name,
+      })
+
+      // Redirect to frontend with token
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8080"
-      reply.redirect(`${frontendUrl}/?auth=success`)
+      reply.redirect(`${frontendUrl}/?auth=success&token=${token}`)
     } catch (error) {
       request.log.error({ error }, "🔴 [OAuth] Callback error")
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8080"
@@ -94,14 +101,33 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // Get current user
   fastify.get("/me", async (request, reply) => {
-    if (!request.session.userId) {
+    let userId: number | undefined
+
+    // Try JWT authentication first (for cross-domain)
+    const authHeader = request.headers.authorization
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const token = authHeader.substring(7)
+        const decoded = fastify.jwt.verify<{ userId: number }>(token)
+        userId = decoded.userId
+      } catch {
+        // JWT invalid, try session auth
+      }
+    }
+
+    // Fallback to session authentication (for same-domain)
+    if (!userId && request.session.userId) {
+      userId = request.session.userId
+    }
+
+    if (!userId) {
       return reply.status(401).send({
         error: "Not authenticated",
       })
     }
 
     try {
-      const user = userService.getUserById(request.session.userId)
+      const user = userService.getUserById(userId)
       return {
         id: user.id,
         email: user.email,
@@ -126,12 +152,37 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // Check authentication status
   fastify.get("/status", async (request, _reply) => {
+    let userId: number | undefined
+    let displayName: string | undefined
+
+    // Try JWT authentication first (for cross-domain)
+    const authHeader = request.headers.authorization
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const token = authHeader.substring(7)
+        const decoded = fastify.jwt.verify<{
+          userId: number
+          displayName: string
+        }>(token)
+        userId = decoded.userId
+        displayName = decoded.displayName
+      } catch {
+        // JWT invalid, try session auth
+      }
+    }
+
+    // Fallback to session authentication (for same-domain)
+    if (!userId && request.session.userId) {
+      userId = request.session.userId
+      displayName = request.session.displayName
+    }
+
     return {
-      authenticated: !!request.session.userId,
-      user: request.session.userId
+      authenticated: !!userId,
+      user: userId
         ? {
-            id: request.session.userId,
-            displayName: request.session.displayName,
+            id: userId,
+            displayName: displayName,
           }
         : null,
     }

@@ -24,6 +24,13 @@ export class ApiClient {
   }
 
   /**
+   * Get authentication token from localStorage
+   */
+  private getAuthToken(): string | null {
+    return localStorage.getItem("ft_transcendence_token")
+  }
+
+  /**
    * Generic fetch wrapper with error handling
    */
   private async fetch<T>(
@@ -37,6 +44,12 @@ export class ApiClient {
 
     if (options.body) {
       headers["Content-Type"] = "application/json"
+    }
+
+    // Add Authorization header if token exists
+    const token = this.getAuthToken()
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
     }
 
     // Merge headers properly
