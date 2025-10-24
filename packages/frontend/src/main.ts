@@ -63,7 +63,7 @@ class App {
           <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
               <p class="text-gray-500 text-sm">
-                ft_transcendence &copy; 2024
+                ft_transcendence &copy; 2025
               </p>
               <div id="lang-selector" class="flex items-center gap-2"></div>
             </div>

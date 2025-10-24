@@ -19,23 +19,26 @@ export class Input {
   private container: HTMLDivElement
   private input: HTMLInputElement
   private errorElement?: HTMLParagraphElement
+  private labelElement?: HTMLLabelElement
+  private required: boolean
 
   constructor(props: InputProps) {
     this.container = document.createElement("div")
     this.container.className = `mb-4 ${props.className || ""}`
+    this.required = props.required || false
 
     // Label
     if (props.label) {
-      const label = document.createElement("label")
-      label.className = "block text-sm font-medium text-gray-300 mb-2"
-      label.textContent = props.label
+      this.labelElement = document.createElement("label")
+      this.labelElement.className = "block text-sm font-medium text-gray-300 mb-2"
+      this.labelElement.textContent = props.label
       if (props.required) {
         const required = document.createElement("span")
         required.className = "text-red-500 ml-1"
         required.textContent = "*"
-        label.appendChild(required)
+        this.labelElement.appendChild(required)
       }
-      this.container.appendChild(label)
+      this.container.appendChild(this.labelElement)
     }
 
     // Input
@@ -132,5 +135,20 @@ export class Input {
 
   setDisabled(disabled: boolean): void {
     this.input.disabled = disabled
+  }
+
+  updateLabel(newLabel: string): void {
+    if (this.labelElement) {
+      // Clear existing content
+      this.labelElement.textContent = newLabel
+
+      // Re-add required asterisk if needed
+      if (this.required) {
+        const required = document.createElement("span")
+        required.className = "text-red-500 ml-1"
+        required.textContent = "*"
+        this.labelElement.appendChild(required)
+      }
+    }
   }
 }
