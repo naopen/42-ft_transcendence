@@ -50,9 +50,11 @@ export class Router {
       this.navigateTo(e.detail)
     }) as EventListener)
 
-    // Handle browser back/forward
-    window.addEventListener("popstate", () => {
-      this.navigateTo(window.location.pathname, false)
+    // CRITICAL: Handle browser back/forward buttons for SPA
+    window.addEventListener("popstate", (e) => {
+      // Use stored state if available, otherwise use current pathname
+      const path = (e.state?.path as string) || window.location.pathname
+      this.navigateTo(path, false)
     })
 
     // Initial route
@@ -60,13 +62,18 @@ export class Router {
   }
 
   public navigateTo(path: string, pushState = true) {
-    if (pushState) {
-      window.history.pushState({}, "", path)
+    // CRITICAL: Update browser history for SPA navigation
+    if (pushState && window.location.pathname !== path) {
+      window.history.pushState({ path }, "", path)
     }
 
     // Destroy current page
     if (this.currentPage?.destroy) {
-      this.currentPage.destroy()
+      try {
+        this.currentPage.destroy()
+      } catch (error) {
+        console.error("[Router] Error destroying page:", error)
+      }
     }
 
     // Parse dynamic routes

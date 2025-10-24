@@ -38,23 +38,18 @@ export class OnlineGamePage {
     this.setupSocketConnection(authState.user.id, authState.user.displayName)
   }
 
-  private setupSocketConnection(userId: number, userName: string): void {
+  private async setupSocketConnection(
+    userId: number,
+    userName: string,
+  ): Promise<void> {
     try {
-      // Connect to Socket.IO server if not already connected
-      if (!socketService.isConnected()) {
-        socketService.connect(userId, userName)
+      // CRITICAL: Use promise-based connection with state machine
+      await socketService.connect(userId, userName)
 
-        // Wait for connection, then send ready signal
-        socketService.on("connected", () => {
-          console.log("[OnlineGamePage] Connected to server")
-          // Send ready signal
-          socketService.sendReady()
-        })
-      } else {
-        // Already connected, send ready signal immediately
-        console.log("[OnlineGamePage] Already connected, sending ready signal")
-        socketService.sendReady()
-      }
+      console.log("[OnlineGamePage] Connected to server, sending ready signal")
+
+      // Send ready signal after successful connection
+      socketService.sendReady()
 
       // Game start event
       socketService.on("gameStart", (data) => {

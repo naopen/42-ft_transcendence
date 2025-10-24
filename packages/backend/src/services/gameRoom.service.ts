@@ -112,8 +112,6 @@ export class GameRoomManager {
     player1.socket.join(roomId)
     player2.socket.join(roomId)
 
-    console.log(`[GameRoom] Created room ${roomId}`)
-
     return roomId
   }
 
@@ -141,27 +139,14 @@ export class GameRoomManager {
   setPlayerReady(userId: number): void {
     const room = this.getRoomByPlayer(userId)
     if (!room) {
-      console.log(
-        `[GameRoom] Player ${userId} tried to set ready but no room found`,
-      )
       return
     }
 
     if (room.player1.userId === userId) {
       room.player1.isReady = true
-      console.log(
-        `[GameRoom] Player 1 (${room.player1.userName}) is ready in room ${room.id}`,
-      )
     } else if (room.player2.userId === userId) {
       room.player2.isReady = true
-      console.log(
-        `[GameRoom] Player 2 (${room.player2.userName}) is ready in room ${room.id}`,
-      )
     }
-
-    console.log(
-      `[GameRoom] Room ${room.id} ready status: P1=${room.player1.isReady}, P2=${room.player2.isReady}`,
-    )
 
     // If both players ready, start game
     if (room.player1.isReady && room.player2.isReady && !room.gameStarted) {
@@ -184,10 +169,8 @@ export class GameRoomManager {
         room.player2.userId,
       )
       room.gameSessionId = session.id
-      console.log(
-        `[GameRoom] Created game session ${session.id} for room ${room.id}`,
-      )
     } catch (error) {
+      // CRITICAL: Log errors (database failures)
       console.error("[GameRoom] Failed to create game session:", error)
     }
 
@@ -213,8 +196,6 @@ export class GameRoomManager {
       isPlayer1: false,
     })
 
-    console.log(`[GameRoom] Game started in room ${room.id}`)
-
     // Start game loop
     this.startGameLoop(room)
   }
@@ -224,18 +205,39 @@ export class GameRoomManager {
    */
   updatePaddle(userId: number, x: number): void {
     const room = this.getRoomByPlayer(userId)
-    if (!room || !room.gameStarted) {
+    if (!room || !room.gameStarted || room.gameEnded) {
       return
     }
 
+    // CRITICAL: Validate input from client to prevent cheating
+    if (typeof x !== "number" || !Number.isFinite(x)) {
+      console.warn(
+        `[GameRoom] 🚨 Invalid paddle position from user ${userId}: ${x}`,
+      )
+      return
+    }
+
+    // CRITICAL: Clamp paddle position to valid range (server-authoritative)
+    const FIELD_WIDTH = 20
+    const PADDLE_WIDTH = 4
+    const maxX = (FIELD_WIDTH - PADDLE_WIDTH) / 2
+    const validatedX = Math.max(-maxX, Math.min(maxX, x))
+
+    // Log if client sent out-of-bounds value (potential cheating attempt)
+    if (Math.abs(validatedX - x) > 0.01) {
+      console.warn(
+        `[GameRoom] ⚠️  Clamped paddle position for user ${userId}: ${x.toFixed(2)} → ${validatedX.toFixed(2)}`,
+      )
+    }
+
     if (room.player1.userId === userId) {
-      room.player1.paddleX = x
-      // Notify opponent
-      room.player2.socket.emit("opponentPaddleMove", { x })
+      room.player1.paddleX = validatedX
+      // Notify opponent with validated position
+      room.player2.socket.emit("opponentPaddleMove", { x: validatedX })
     } else if (room.player2.userId === userId) {
-      room.player2.paddleX = x
-      // Notify opponent
-      room.player1.socket.emit("opponentPaddleMove", { x })
+      room.player2.paddleX = validatedX
+      // Notify opponent with validated position
+      room.player1.socket.emit("opponentPaddleMove", { x: validatedX })
     }
   }
 
@@ -382,21 +384,24 @@ export class GameRoomManager {
    * End game
    */
   private endGame(room: GameRoom): void {
-    // Prevent multiple calls to endGame
+    // CRITICAL: Prevent multiple calls to endGame (race condition protection)
     if (room.gameEnded) {
+      console.warn(
+        `[GameRoom] ⚠️  endGame called multiple times for room ${room.id} - prevented`,
+      )
       return
     }
 
-    // Mark game as ended
+    // CRITICAL: Atomically set flag and stop game loop to prevent score updates
     room.gameEnded = true
 
-    // Stop game loop immediately
+    // CRITICAL: Stop game loop IMMEDIATELY before any other operations
     if (room.gameLoopInterval) {
       clearInterval(room.gameLoopInterval)
       room.gameLoopInterval = null
-      console.log(`[GameRoom] Stopped game loop for room ${room.id}`)
     }
 
+    // Now scores are frozen - safe to calculate winner
     const winnerId =
       room.player1.score > room.player2.score
         ? room.player1.userId
@@ -412,10 +417,8 @@ export class GameRoomManager {
           room.player2.score,
           duration,
         )
-        console.log(
-          `[GameRoom] Saved game session ${room.gameSessionId} to database`,
-        )
       } catch (error) {
+        // CRITICAL: Log errors (database failures)
         console.error("[GameRoom] Failed to save game session:", error)
       }
     }
@@ -427,8 +430,6 @@ export class GameRoomManager {
         player2: room.player2.score,
       },
     })
-
-    console.log(`[GameRoom] Game ended in room ${room.id}. Winner: ${winnerId}`)
 
     // Clean up room after delay
     setTimeout(() => {
@@ -457,8 +458,6 @@ export class GameRoomManager {
 
     // Remove room
     this.rooms.delete(roomId)
-
-    console.log(`[GameRoom] Destroyed room ${roomId}`)
   }
 
   /**

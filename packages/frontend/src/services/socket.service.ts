@@ -52,21 +52,36 @@ interface GameState {
   timestamp: number
 }
 
+// CRITICAL: Connection state machine to prevent race conditions
+type ConnectionState = "disconnected" | "connecting" | "connected"
+
 export class SocketService {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null =
     null
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private reconnectDelay = 1000
+  private connectionState: ConnectionState = "disconnected"
+  private pendingConnection: Promise<void> | null = null
 
   /**
    * Connect to Socket.IO server
    */
-  connect(userId: number, userName: string): void {
-    if (this.socket?.connected) {
+  connect(userId: number, userName: string): Promise<void> {
+    // CRITICAL: Check connection state to prevent multiple connections
+    if (this.connectionState === "connected" && this.socket?.connected) {
       console.log("[Socket.IO] Already connected")
-      return
+      return Promise.resolve()
     }
+
+    // CRITICAL: If already connecting, return existing promise
+    if (this.connectionState === "connecting" && this.pendingConnection) {
+      console.log("[Socket.IO] Connection already in progress, waiting...")
+      return this.pendingConnection
+    }
+
+    // Set state to connecting
+    this.connectionState = "connecting"
 
     // Detect if we're on HTTPS and construct the backend URL accordingly
     let apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000"
@@ -77,24 +92,44 @@ export class SocketService {
       apiUrl = apiUrl.replace(/^http:/, "https:")
     }
 
-    try {
-      this.socket = io(apiUrl, {
-        auth: {
-          userId,
-          userName,
-        },
-        transports: ["websocket", "polling"],
-        reconnection: true,
-        reconnectionDelay: this.reconnectDelay,
-        reconnectionAttempts: this.maxReconnectAttempts,
-      })
+    // Create connection promise
+    this.pendingConnection = new Promise<void>((resolve, reject) => {
+      try {
+        this.socket = io(apiUrl, {
+          auth: {
+            userId,
+            userName,
+          },
+          transports: ["websocket", "polling"],
+          reconnection: true,
+          reconnectionDelay: this.reconnectDelay,
+          reconnectionAttempts: this.maxReconnectAttempts,
+        })
 
-      this.setupEventHandlers()
-      console.log(`[Socket.IO] Connecting to server at ${apiUrl}...`)
-    } catch (error) {
-      console.error("[Socket.IO] Connection error:", error)
-      throw error
-    }
+        // Wait for connection before resolving
+        this.socket.once("connect", () => {
+          this.connectionState = "connected"
+          this.pendingConnection = null
+          resolve()
+        })
+
+        this.socket.once("connect_error", (error) => {
+          this.connectionState = "disconnected"
+          this.pendingConnection = null
+          reject(error)
+        })
+
+        this.setupEventHandlers()
+        console.log(`[Socket.IO] Connecting to server at ${apiUrl}...`)
+      } catch (error) {
+        this.connectionState = "disconnected"
+        this.pendingConnection = null
+        console.error("[Socket.IO] Connection error:", error)
+        reject(error)
+      }
+    })
+
+    return this.pendingConnection
   }
 
   /**
@@ -109,9 +144,13 @@ export class SocketService {
       this.socket.disconnect()
       this.socket = null
       this.reconnectAttempts = 0
+      this.connectionState = "disconnected"
+      this.pendingConnection = null
       console.log("[Socket.IO] Disconnected from server")
     } catch (error) {
       console.error("[Socket.IO] Disconnect error:", error)
+      this.connectionState = "disconnected"
+      this.pendingConnection = null
     }
   }
 
@@ -251,10 +290,12 @@ export class SocketService {
     this.socket.on("connect", () => {
       console.log("[Socket.IO] Connected to server")
       this.reconnectAttempts = 0
+      this.connectionState = "connected"
     })
 
     this.socket.on("disconnect", (reason) => {
       console.log("[Socket.IO] Disconnected:", reason)
+      this.connectionState = "disconnected"
     })
 
     this.socket.on("connect_error", (error) => {
@@ -266,6 +307,7 @@ export class SocketService {
 
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         console.error("[Socket.IO] Max reconnection attempts reached")
+        this.connectionState = "disconnected"
         this.disconnect()
       }
     })
