@@ -27,8 +27,8 @@ export class HomePage {
     const hero = document.createElement("div")
     hero.className = "text-center mb-16 animate-slide-up"
     hero.innerHTML = `
-      <h1 class="text-6xl font-bold mb-6 text-42-accent">ft_transcendence</h1>
-      <p class="text-xl text-gray-300 mb-8">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-42-accent">ft_transcendence</h1>
+      <p class="text-base sm:text-lg md:text-xl text-gray-300 mb-8">
         ${i18n.t("home.subtitle")}
       </p>
     `
@@ -140,7 +140,8 @@ export class HomePage {
     section.className = "mb-16"
 
     const title = document.createElement("h2")
-    title.className = "text-3xl font-bold text-center mb-8 text-white"
+    title.className =
+      "text-2xl sm:text-3xl font-bold text-center mb-8 text-white"
     title.textContent = i18n.t("home.features.title")
     section.appendChild(title)
 
@@ -199,11 +200,11 @@ export class HomePage {
   private createAuthSection(): HTMLElement {
     const section = document.createElement("div")
     section.className =
-      "text-center bg-42-dark p-8 rounded-lg border border-gray-800"
+      "text-center bg-42-dark p-6 sm:p-8 rounded-lg border border-gray-800"
 
     section.innerHTML = `
-      <h2 class="text-2xl font-bold mb-4 text-white">${i18n.t("home.auth.title")}</h2>
-      <p class="text-gray-400 mb-6">${i18n.t("home.auth.description")}</p>
+      <h2 class="text-xl sm:text-2xl font-bold mb-4 text-white">${i18n.t("home.auth.title")}</h2>
+      <p class="text-sm sm:text-base text-gray-400 mb-6">${i18n.t("home.auth.description")}</p>
     `
 
     const button = new Button({
