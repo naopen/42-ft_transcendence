@@ -62,8 +62,9 @@ export async function errorHandler(
 ) {
   const statusCode = (error as AppError).statusCode || 500
   const code = (error as AppError).code || "INTERNAL_SERVER_ERROR"
+  const isProduction = process.env.NODE_ENV === "production"
 
-  // Log error for debugging
+  // Log error for debugging (always log full details server-side)
   if (statusCode >= 500) {
     request.log.error({
       error: error.message,
@@ -79,12 +80,31 @@ export async function errorHandler(
     })
   }
 
-  // Send error response
-  reply.status(statusCode).send({
+  // Prepare error response
+  const errorResponse: {
+    error: {
+      code: string
+      message: string
+      statusCode: number
+      stack?: string
+    }
+  } = {
     error: {
       code,
-      message: error.message,
+      // In production, hide internal error details for 500 errors
+      message:
+        isProduction && statusCode >= 500
+          ? "Internal server error"
+          : error.message,
       statusCode,
     },
-  })
+  }
+
+  // Only include stack trace in development mode
+  if (!isProduction && error.stack) {
+    errorResponse.error.stack = error.stack
+  }
+
+  // Send error response
+  reply.status(statusCode).send(errorResponse)
 }
