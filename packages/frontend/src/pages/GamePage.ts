@@ -20,6 +20,8 @@ export class GamePage {
   private canvas: HTMLCanvasElement
   private engine: PongEngine | null = null
   private config: GamePageConfig
+  private countdownValue = 3
+  private isCountingDown = false
 
   // UI elements
   private scoreDisplay: HTMLDivElement
@@ -65,6 +67,9 @@ export class GamePage {
     this.controlsInfo = this.createControlsInfo()
 
     this.render()
+
+    // Initialize engine in preview mode (scene rendered but game not started)
+    this.initializePreview()
   }
 
   private createScoreDisplay(): HTMLDivElement {
@@ -137,11 +142,36 @@ export class GamePage {
     // Score display
     this.container.appendChild(this.scoreDisplay)
 
-    // Game canvas container
+    // Game canvas container with hint overlay
     const canvasContainer = document.createElement("div")
     canvasContainer.className =
-      "bg-black rounded-lg overflow-hidden shadow-2xl mb-6"
+      "bg-black rounded-lg overflow-hidden shadow-2xl mb-6 relative"
     canvasContainer.appendChild(this.canvas)
+
+    // Add camera control hint overlay (removed after first interaction)
+    const hint = document.createElement("div")
+    hint.id = "camera-hint"
+    hint.className =
+      "absolute top-4 right-4 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg text-sm animate-pulse pointer-events-none"
+    hint.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span>🖱️</span>
+        <span>Drag to rotate • Scroll to zoom</span>
+      </div>
+    `
+    canvasContainer.appendChild(hint)
+
+    // Remove hint after user interacts with canvas
+    let hintRemoved = false
+    const removeHint = () => {
+      if (!hintRemoved) {
+        hint.remove()
+        hintRemoved = true
+      }
+    }
+    this.canvas.addEventListener("mousedown", removeHint, { once: true })
+    this.canvas.addEventListener("wheel", removeHint, { once: true })
+
     this.container.appendChild(canvasContainer)
 
     // Controls
@@ -159,12 +189,8 @@ export class GamePage {
     this.pauseButton.setDisabled(true)
   }
 
-  private startGame(): void {
-    if (this.engine) {
-      this.engine.dispose()
-    }
-
-    // Create new engine
+  private initializePreview(): void {
+    // Create engine but don't start the game yet
     this.engine = new PongEngine({
       canvas: this.canvas,
       player1Name: this.config.player1Name,
@@ -174,11 +200,75 @@ export class GamePage {
       onGameEnd: (winner) => this.handleGameEnd(winner),
     })
 
-    // Start game
+    // Scene is rendered but game hasn't started (isPlaying = false)
+    // Camera is interactive and user can rotate/zoom
+  }
+
+  private startGame(): void {
+    if (this.isCountingDown) {
+      return
+    }
+
+    this.isCountingDown = true
+    this.startButton.setDisabled(true)
+
+    // Show countdown overlay
+    this.showCountdown()
+  }
+
+  private showCountdown(): void {
+    // Create countdown overlay
+    const overlay = document.createElement("div")
+    overlay.id = "countdown-overlay"
+    overlay.className =
+      "fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+    overlay.innerHTML = `
+      <div id="countdown-number" class="text-9xl font-bold text-42-accent animate-ping-once">
+        ${this.countdownValue}
+      </div>
+    `
+    document.body.appendChild(overlay)
+
+    // Start countdown
+    this.countdownValue = 3
+    const countdownInterval = setInterval(() => {
+      this.countdownValue--
+
+      const countdownEl = document.getElementById("countdown-number")
+      if (!countdownEl) {
+        clearInterval(countdownInterval)
+        return
+      }
+
+      if (this.countdownValue > 0) {
+        // Show number
+        countdownEl.textContent = this.countdownValue.toString()
+        countdownEl.className =
+          "text-9xl font-bold text-42-accent animate-ping-once"
+      } else if (this.countdownValue === 0) {
+        // Show GO!
+        countdownEl.textContent = "GO!"
+        countdownEl.className =
+          "text-9xl font-bold text-green-400 animate-ping-once"
+      } else {
+        // Remove overlay and start game
+        clearInterval(countdownInterval)
+        overlay.remove()
+        this.actuallyStartGame()
+      }
+    }, 1000)
+  }
+
+  private actuallyStartGame(): void {
+    if (!this.engine) {
+      return
+    }
+
+    // Start the actual game
     this.engine.start()
 
     // Update UI
-    this.startButton.setDisabled(true)
+    this.isCountingDown = false
     this.pauseButton.setDisabled(false)
 
     // Focus canvas for keyboard input
@@ -294,7 +384,15 @@ export class GamePage {
               variant: "primary",
               onClick: () => {
                 modal.close()
-                this.startGame()
+                // Reset scores
+                this.updateScore(0, 0)
+                // Enable start button
+                this.startButton.setDisabled(false)
+                this.startButton.updateText(
+                  i18n.t("game.startGame") || "Start Game",
+                )
+                // Disable pause button
+                this.pauseButton.setDisabled(true)
               },
             }).getElement(),
             new Button({
@@ -311,9 +409,11 @@ export class GamePage {
 
     modal.open()
 
-    // Reset UI
-    this.startButton.setDisabled(false)
-    this.pauseButton.setDisabled(true)
+    // Reset UI for next game (if applicable)
+    if (!isTournamentMode) {
+      this.startButton.setDisabled(false)
+      this.pauseButton.setDisabled(true)
+    }
   }
 
   getElement(): HTMLDivElement {
