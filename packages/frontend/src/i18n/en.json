@@ -224,8 +224,11 @@
     "resume": "Resume",
     "quit": "Quit",
     "controls": "Controls",
+    "yourControls": "Your Controls",
     "moveLeft": "Move Left",
     "moveRight": "Move Right",
+    "cameraHint": "Drag to rotate • Scroll to zoom",
+    "firstTo11": "First to 11 points wins!",
     "confirmQuit": {
       "title": "Quit Game?",
       "message": "Are you sure you want to quit? Progress will be lost.",
@@ -238,6 +241,12 @@
       "finalScore": "Final Score",
       "playAgain": "Play Again",
       "exit": "Exit"
+    },
+    "preparation": {
+      "getReady": "Get Ready!",
+      "waitingForOpponent": "Waiting for opponent...",
+      "getReadyCountdown": "Get ready...",
+      "go": "GO!"
     }
   },
   "onlinePlay": {

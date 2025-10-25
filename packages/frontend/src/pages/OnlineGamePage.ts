@@ -215,7 +215,7 @@ export class OnlineGamePage {
     header.className = "text-center mb-8"
     header.innerHTML = `
       <div class="text-6xl mb-4 animate-pulse">🎮</div>
-      <h1 class="text-4xl font-bold mb-2 text-white">Get Ready!</h1>
+      <h1 class="text-4xl font-bold mb-2 text-white">${i18n.t("game.preparation.getReady")}</h1>
       <p class="text-xl text-gray-300">${this.player1Name} vs ${this.player2Name}</p>
     `
     this.container.appendChild(header)
@@ -229,25 +229,25 @@ export class OnlineGamePage {
 
     controlsSection.innerHTML = `
       <div class="bg-gradient-to-br from-42-dark to-gray-900 p-12 rounded-2xl border-2 border-42-accent shadow-2xl">
-        <h2 class="text-3xl font-bold mb-8 text-center text-42-accent">Your Controls</h2>
+        <h2 class="text-3xl font-bold mb-8 text-center text-42-accent">${i18n.t("game.yourControls")}</h2>
         <div class="space-y-6">
           <div class="flex items-center justify-between bg-gray-800 p-6 rounded-xl">
             <div class="flex items-center gap-4">
               <div class="text-4xl">⬅️</div>
-              <span class="text-2xl text-white font-semibold">Move Left</span>
+              <span class="text-2xl text-white font-semibold">${i18n.t("game.moveLeft")}</span>
             </div>
             <kbd class="px-8 py-4 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-lg text-3xl font-bold shadow-lg">${leftKey}</kbd>
           </div>
           <div class="flex items-center justify-between bg-gray-800 p-6 rounded-xl">
             <div class="flex items-center gap-4">
               <div class="text-4xl">➡️</div>
-              <span class="text-2xl text-white font-semibold">Move Right</span>
+              <span class="text-2xl text-white font-semibold">${i18n.t("game.moveRight")}</span>
             </div>
             <kbd class="px-8 py-4 bg-gradient-to-br from-red-500 to-red-700 text-white rounded-lg text-3xl font-bold shadow-lg">${rightKey}</kbd>
           </div>
         </div>
         <div class="mt-8 text-center">
-          <p class="text-gray-400 text-lg">First to 11 points wins!</p>
+          <p class="text-gray-400 text-lg">${i18n.t("game.firstTo11")}</p>
         </div>
       </div>
     `
@@ -259,7 +259,7 @@ export class OnlineGamePage {
     countdownSection.className = "text-center py-8"
     countdownSection.innerHTML = `
       <div class="text-gray-400 text-lg">
-        <div class="animate-pulse">Waiting for opponent...</div>
+        <div class="animate-pulse">${i18n.t("game.preparation.waitingForOpponent")}</div>
       </div>
     `
     this.container.appendChild(countdownSection)
@@ -276,14 +276,14 @@ export class OnlineGamePage {
       countdownEl.innerHTML = `
         <div class="countdown-number">
           <div class="text-9xl font-bold text-42-accent animate-ping-once mb-4">${this.countdownValue}</div>
-          <p class="text-2xl text-white">Get ready...</p>
+          <p class="text-2xl text-white">${i18n.t("game.preparation.getReadyCountdown")}</p>
         </div>
       `
     } else {
       // Show GO!
       countdownEl.innerHTML = `
         <div class="countdown-number">
-          <div class="text-9xl font-bold text-green-400 animate-pulse mb-4">GO!</div>
+          <div class="text-9xl font-bold text-green-400 animate-pulse mb-4">${i18n.t("game.preparation.go")}</div>
         </div>
       `
     }

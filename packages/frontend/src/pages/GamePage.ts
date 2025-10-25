@@ -156,7 +156,7 @@ export class GamePage {
     hint.innerHTML = `
       <div class="flex items-center gap-2">
         <span>🖱️</span>
-        <span>Drag to rotate • Scroll to zoom</span>
+        <span>${i18n.t("game.cameraHint")}</span>
       </div>
     `
     canvasContainer.appendChild(hint)

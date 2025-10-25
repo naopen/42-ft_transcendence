@@ -224,8 +224,11 @@
     "resume": "再開",
     "quit": "終了",
     "controls": "操作方法",
+    "yourControls": "操作方法",
     "moveLeft": "左移動",
     "moveRight": "右移動",
+    "cameraHint": "ドラッグで回転 • スクロールでズーム",
+    "firstTo11": "先に11点取った方が勝利！",
     "confirmQuit": {
       "title": "ゲームを終了しますか？",
       "message": "本当に終了しますか？進行状況は失われます。",
@@ -238,6 +241,12 @@
       "finalScore": "最終スコア",
       "playAgain": "もう一度プレイ",
       "exit": "終了"
+    },
+    "preparation": {
+      "getReady": "準備してください！",
+      "waitingForOpponent": "対戦相手を待っています...",
+      "getReadyCountdown": "準備してください...",
+      "go": "スタート！"
     }
   },
   "onlinePlay": {

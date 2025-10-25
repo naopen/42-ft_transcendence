@@ -224,8 +224,11 @@
     "resume": "Reprendre",
     "quit": "Quitter",
     "controls": "Contrôles",
+    "yourControls": "Vos Contrôles",
     "moveLeft": "Déplacer à Gauche",
     "moveRight": "Déplacer à Droite",
+    "cameraHint": "Faites glisser pour pivoter • Défilez pour zoomer",
+    "firstTo11": "Le premier à 11 points gagne !",
     "confirmQuit": {
       "title": "Quitter le Jeu ?",
       "message": "Êtes-vous sûr de vouloir quitter ? La progression sera perdue.",
@@ -238,6 +241,12 @@
       "finalScore": "Score Final",
       "playAgain": "Rejouer",
       "exit": "Quitter"
+    },
+    "preparation": {
+      "getReady": "Préparez-vous !",
+      "waitingForOpponent": "En attente de l'adversaire...",
+      "getReadyCountdown": "Préparez-vous...",
+      "go": "PARTEZ !"
     }
   },
   "onlinePlay": {
