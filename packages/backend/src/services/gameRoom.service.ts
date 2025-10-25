@@ -37,6 +37,7 @@ interface GameRoom {
     velocityX: number
     velocityZ: number
   }
+  preparationPhase: boolean
   gameStarted: boolean
   gameEnded: boolean
   gameSessionId: number | null
@@ -92,6 +93,7 @@ export class GameRoomManager {
         velocityX: 0,
         velocityZ: 0,
       },
+      preparationPhase: false,
       gameStarted: false,
       gameEnded: false,
       gameSessionId: null,
@@ -148,10 +150,67 @@ export class GameRoomManager {
       room.player2.isReady = true
     }
 
-    // If both players ready, start game
-    if (room.player1.isReady && room.player2.isReady && !room.gameStarted) {
-      this.startGame(room)
+    // If both players ready, start preparation phase
+    if (
+      room.player1.isReady &&
+      room.player2.isReady &&
+      !room.preparationPhase &&
+      !room.gameStarted
+    ) {
+      this.startPreparationPhase(room)
     }
+  }
+
+  /**
+   * Start preparation phase (controls display + countdown)
+   */
+  private startPreparationPhase(room: GameRoom): void {
+    room.preparationPhase = true
+
+    console.log(`[GameRoom] Starting preparation phase for room ${room.id}`)
+
+    // Send preparation start to both players
+    room.player1.socket.emit("startPreparation", {
+      player1Name: room.player1.userName,
+      player2Name: room.player2.userName,
+      isPlayer1: true,
+    })
+
+    room.player2.socket.emit("startPreparation", {
+      player1Name: room.player1.userName,
+      player2Name: room.player2.userName,
+      isPlayer1: false,
+    })
+
+    // Wait 3 seconds to show controls, then start countdown
+    setTimeout(() => {
+      this.startCountdown(room)
+    }, 3000)
+  }
+
+  /**
+   * Start synchronized countdown (3, 2, 1, GO!)
+   */
+  private startCountdown(room: GameRoom): void {
+    let count = 3
+
+    const countdownInterval = setInterval(() => {
+      if (!this.rooms.has(room.id)) {
+        clearInterval(countdownInterval)
+        return
+      }
+
+      // Broadcast countdown to both players
+      this.io.to(room.id).emit("countdown", { count })
+
+      count--
+
+      if (count < 0) {
+        clearInterval(countdownInterval)
+        // Start the actual game after countdown
+        this.startGame(room)
+      }
+    }, 1000)
   }
 
   /**

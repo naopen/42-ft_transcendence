@@ -14,6 +14,7 @@ export class OnlineGamePage {
   private player1Name = ""
   private player2Name = ""
   private paddleUpdateInterval: number | null = null
+  private countdownValue = 3
 
   constructor(roomId: string) {
     this.roomId = roomId
@@ -76,6 +77,22 @@ export class OnlineGamePage {
 
       // Send ready signal after successful connection
       socketService.sendReady()
+
+      // Preparation phase start
+      socketService.on("startPreparation", (data) => {
+        console.log("[OnlineGamePage] Preparation phase starting:", data)
+        this.isPlayer1 = data.isPlayer1
+        this.player1Name = data.player1Name
+        this.player2Name = data.player2Name
+        this.renderPreparationScreen()
+      })
+
+      // Countdown event
+      socketService.on("countdown", (data) => {
+        console.log("[OnlineGamePage] Countdown:", data.count)
+        this.countdownValue = data.count
+        this.updateCountdownDisplay()
+      })
 
       // Game start event
       socketService.on("gameStart", (data) => {
@@ -188,6 +205,88 @@ export class OnlineGamePage {
         </div>
       </div>
     `
+  }
+
+  private renderPreparationScreen(): void {
+    this.container.innerHTML = ""
+
+    // Header with match info
+    const header = document.createElement("div")
+    header.className = "text-center mb-8"
+    header.innerHTML = `
+      <div class="text-6xl mb-4 animate-pulse">🎮</div>
+      <h1 class="text-4xl font-bold mb-2 text-white">Get Ready!</h1>
+      <p class="text-xl text-gray-300">${this.player1Name} vs ${this.player2Name}</p>
+    `
+    this.container.appendChild(header)
+
+    // Controls display - large and prominent
+    const controlsSection = document.createElement("div")
+    controlsSection.className = "max-w-2xl mx-auto mb-8"
+
+    const leftKey = this.isPlayer1 ? "A" : "←"
+    const rightKey = this.isPlayer1 ? "D" : "→"
+
+    controlsSection.innerHTML = `
+      <div class="bg-gradient-to-br from-42-dark to-gray-900 p-12 rounded-2xl border-2 border-42-accent shadow-2xl">
+        <h2 class="text-3xl font-bold mb-8 text-center text-42-accent">Your Controls</h2>
+        <div class="space-y-6">
+          <div class="flex items-center justify-between bg-gray-800 p-6 rounded-xl">
+            <div class="flex items-center gap-4">
+              <div class="text-4xl">⬅️</div>
+              <span class="text-2xl text-white font-semibold">Move Left</span>
+            </div>
+            <kbd class="px-8 py-4 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-lg text-3xl font-bold shadow-lg">${leftKey}</kbd>
+          </div>
+          <div class="flex items-center justify-between bg-gray-800 p-6 rounded-xl">
+            <div class="flex items-center gap-4">
+              <div class="text-4xl">➡️</div>
+              <span class="text-2xl text-white font-semibold">Move Right</span>
+            </div>
+            <kbd class="px-8 py-4 bg-gradient-to-br from-red-500 to-red-700 text-white rounded-lg text-3xl font-bold shadow-lg">${rightKey}</kbd>
+          </div>
+        </div>
+        <div class="mt-8 text-center">
+          <p class="text-gray-400 text-lg">First to 11 points wins!</p>
+        </div>
+      </div>
+    `
+    this.container.appendChild(controlsSection)
+
+    // Countdown display (initially hidden, will show when countdown starts)
+    const countdownSection = document.createElement("div")
+    countdownSection.id = "countdown-display"
+    countdownSection.className = "text-center py-8"
+    countdownSection.innerHTML = `
+      <div class="text-gray-400 text-lg">
+        <div class="animate-pulse">Waiting for opponent...</div>
+      </div>
+    `
+    this.container.appendChild(countdownSection)
+  }
+
+  private updateCountdownDisplay(): void {
+    const countdownEl = document.getElementById("countdown-display")
+    if (!countdownEl) {
+      return
+    }
+
+    if (this.countdownValue > 0) {
+      // Show countdown number with animation
+      countdownEl.innerHTML = `
+        <div class="countdown-number">
+          <div class="text-9xl font-bold text-42-accent animate-ping-once mb-4">${this.countdownValue}</div>
+          <p class="text-2xl text-white">Get ready...</p>
+        </div>
+      `
+    } else {
+      // Show GO!
+      countdownEl.innerHTML = `
+        <div class="countdown-number">
+          <div class="text-9xl font-bold text-green-400 animate-pulse mb-4">GO!</div>
+        </div>
+      `
+    }
   }
 
   private renderGameScreen(): void {
@@ -335,6 +434,8 @@ export class OnlineGamePage {
     }
 
     // Clean up socket listeners
+    socketService.off("startPreparation")
+    socketService.off("countdown")
     socketService.off("gameStart")
     socketService.off("gameState")
     socketService.off("scoreUpdate")

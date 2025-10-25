@@ -6,6 +6,14 @@ interface ServerToClientEvents {
   queueLeft: () => void
   matchFound: (data: { gameRoomId: string; opponentName: string }) => void
 
+  // Pre-game preparation
+  startPreparation: (data: {
+    player1Name: string
+    player2Name: string
+    isPlayer1: boolean
+  }) => void
+  countdown: (data: { count: number }) => void
+
   // Game events
   gameStart: (data: {
     player1Name: string
