@@ -228,7 +228,10 @@
     "moveLeft": "Move Left",
     "moveRight": "Move Right",
     "cameraHint": "Drag to rotate • Scroll to zoom",
+    "cameraHintMobile": "Swipe to rotate • Pinch to zoom",
     "firstTo11": "First to 11 points wins!",
+    "tapToRotate": "Tap to rotate view",
+    "useButtons": "Use buttons below to control",
     "confirmQuit": {
       "title": "Quit Game?",
       "message": "Are you sure you want to quit? Progress will be lost.",

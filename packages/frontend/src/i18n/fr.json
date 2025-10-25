@@ -228,7 +228,10 @@
     "moveLeft": "Déplacer à Gauche",
     "moveRight": "Déplacer à Droite",
     "cameraHint": "Faites glisser pour pivoter • Défilez pour zoomer",
+    "cameraHintMobile": "Glissez pour pivoter • Pincez pour zoomer",
     "firstTo11": "Le premier à 11 points gagne !",
+    "tapToRotate": "Touchez pour pivoter",
+    "useButtons": "Utilisez les boutons ci-dessous",
     "confirmQuit": {
       "title": "Quitter le Jeu ?",
       "message": "Êtes-vous sûr de vouloir quitter ? La progression sera perdue.",

@@ -3,6 +3,7 @@ import { Button } from "../components/Button"
 import { Modal } from "../components/Modal"
 import { GameState, PongEngine } from "../game/PongEngine"
 import { i18n } from "../i18n"
+import { getOptimalCanvasSize, isMobileDevice } from "../utils/mobile"
 
 export interface GamePageConfig {
   player1Name: string
@@ -22,6 +23,7 @@ export class GamePage {
   private config: GamePageConfig
   private countdownValue = 3
   private isCountingDown = false
+  private isMobile: boolean
 
   // UI elements
   private scoreDisplay: HTMLDivElement
@@ -29,18 +31,26 @@ export class GamePage {
   private startButton: Button
   private pauseButton: Button
   private quitButton: Button
+  private mobileControls: HTMLDivElement | null = null
 
   constructor(config: GamePageConfig) {
     this.config = config
+    this.isMobile = isMobileDevice()
     this.container = document.createElement("div")
-    this.container.className = "max-w-7xl mx-auto"
+    this.container.className = "max-w-7xl mx-auto px-2 sm:px-4"
 
-    // Create canvas
+    // Create canvas with responsive size
     this.canvas = document.createElement("canvas")
     this.canvas.id = "game-canvas"
     this.canvas.className = "w-full rounded-lg shadow-2xl"
-    this.canvas.width = 1280
-    this.canvas.height = 720
+
+    // Set initial canvas size
+    const canvasSize = getOptimalCanvasSize(
+      this.isMobile ? window.innerWidth : 1280,
+      this.isMobile ? window.innerHeight * 0.5 : 720,
+    )
+    this.canvas.width = canvasSize.width
+    this.canvas.height = canvasSize.height
 
     // Create UI elements
     this.scoreDisplay = this.createScoreDisplay()
@@ -74,18 +84,18 @@ export class GamePage {
 
   private createScoreDisplay(): HTMLDivElement {
     const display = document.createElement("div")
-    display.className = "grid grid-cols-3 gap-8 mb-8"
+    display.className = "grid grid-cols-3 gap-2 sm:gap-8 mb-4 sm:mb-8"
     display.innerHTML = `
-      <div class="text-center p-6 bg-42-dark rounded-lg border border-blue-500">
-        <div class="text-sm text-gray-400 mb-2">${this.config.player1Name}</div>
-        <div id="player1-score" class="text-6xl font-bold text-42-accent">0</div>
+      <div class="text-center p-3 sm:p-6 bg-42-dark rounded-lg border border-blue-500">
+        <div class="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2 truncate">${this.config.player1Name}</div>
+        <div id="player1-score" class="text-3xl sm:text-6xl font-bold text-42-accent">0</div>
       </div>
       <div class="flex items-center justify-center">
-        <div class="text-4xl font-bold text-gray-500">VS</div>
+        <div class="text-2xl sm:text-4xl font-bold text-gray-500">VS</div>
       </div>
-      <div class="text-center p-6 bg-42-dark rounded-lg border border-red-500">
-        <div class="text-sm text-gray-400 mb-2">${this.config.player2Name}</div>
-        <div id="player2-score" class="text-6xl font-bold text-red-400">0</div>
+      <div class="text-center p-3 sm:p-6 bg-42-dark rounded-lg border border-red-500">
+        <div class="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2 truncate">${this.config.player2Name}</div>
+        <div id="player2-score" class="text-3xl sm:text-6xl font-bold text-red-400">0</div>
       </div>
     `
     return display
@@ -132,10 +142,10 @@ export class GamePage {
 
     // Header
     const header = document.createElement("div")
-    header.className = "text-center mb-6"
+    header.className = "text-center mb-4 sm:mb-6"
     header.innerHTML = `
-      <h1 class="text-4xl font-bold mb-2 text-42-accent">3D Pong</h1>
-      <p class="text-gray-400">${i18n.t("game.subtitle") || "First to score wins!"} ${this.config.maxScore || 11}</p>
+      <h1 class="text-2xl sm:text-4xl font-bold mb-2 text-42-accent">3D Pong</h1>
+      <p class="text-sm sm:text-base text-gray-400">${i18n.t("game.subtitle") || "First to score wins!"} ${this.config.maxScore || 11}</p>
     `
     this.container.appendChild(header)
 
@@ -153,10 +163,14 @@ export class GamePage {
     hint.id = "camera-hint"
     hint.className =
       "absolute top-4 right-4 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg text-sm animate-pulse pointer-events-none"
+    const hintText = this.isMobile
+      ? i18n.t("game.cameraHintMobile")
+      : i18n.t("game.cameraHint")
+    const hintIcon = this.isMobile ? "👆" : "🖱️"
     hint.innerHTML = `
       <div class="flex items-center gap-2">
-        <span>🖱️</span>
-        <span>${i18n.t("game.cameraHint")}</span>
+        <span>${hintIcon}</span>
+        <span>${hintText}</span>
       </div>
     `
     canvasContainer.appendChild(hint)
@@ -182,11 +196,120 @@ export class GamePage {
     controls.appendChild(this.quitButton.getElement())
     this.container.appendChild(controls)
 
-    // Controls info
-    this.container.appendChild(this.controlsInfo)
+    // Controls info (hide on mobile)
+    if (!this.isMobile) {
+      this.container.appendChild(this.controlsInfo)
+    }
+
+    // Mobile controls
+    if (this.isMobile) {
+      this.mobileControls = this.createMobileControls()
+      this.container.appendChild(this.mobileControls)
+    }
 
     // Initialize pause button as disabled
     this.pauseButton.setDisabled(true)
+
+    // Handle window resize for responsive canvas
+    window.addEventListener("resize", () => this.handleResize())
+  }
+
+  private handleResize(): void {
+    const canvasSize = getOptimalCanvasSize(
+      this.isMobile ? window.innerWidth : 1280,
+      this.isMobile ? window.innerHeight * 0.5 : 720,
+    )
+    this.canvas.width = canvasSize.width
+    this.canvas.height = canvasSize.height
+  }
+
+  private createMobileControls(): HTMLDivElement {
+    const controls = document.createElement("div")
+    controls.className =
+      "fixed bottom-0 left-0 right-0 bg-42-dark border-t border-gray-700 p-4 z-10"
+
+    const controlsContainer = document.createElement("div")
+    controlsContainer.className = "max-w-7xl mx-auto grid grid-cols-2 gap-8"
+
+    // Left button
+    const leftButton = document.createElement("button")
+    leftButton.className =
+      "bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-8 px-6 rounded-xl shadow-lg active:shadow-inner text-2xl select-none touch-manipulation flex items-center justify-center gap-3"
+    leftButton.innerHTML = `
+      <span class="text-4xl">←</span>
+      <span>${i18n.t("game.moveLeft")}</span>
+    `
+
+    // Right button
+    const rightButton = document.createElement("button")
+    rightButton.className =
+      "bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-8 px-6 rounded-xl shadow-lg active:shadow-inner text-2xl select-none touch-manipulation flex items-center justify-center gap-3"
+    rightButton.innerHTML = `
+      <span>${i18n.t("game.moveRight")}</span>
+      <span class="text-4xl">→</span>
+    `
+
+    // Button event handlers
+    const handleLeftStart = () => {
+      if (this.engine) {
+        this.engine.setMobileButtonState(true, false)
+      }
+    }
+
+    const handleRightStart = () => {
+      if (this.engine) {
+        this.engine.setMobileButtonState(false, true)
+      }
+    }
+
+    const handleButtonEnd = () => {
+      if (this.engine) {
+        this.engine.setMobileButtonState(false, false)
+      }
+    }
+
+    // Touch events for left button
+    leftButton.addEventListener("touchstart", (e) => {
+      e.preventDefault()
+      handleLeftStart()
+    })
+    leftButton.addEventListener("touchend", (e) => {
+      e.preventDefault()
+      handleButtonEnd()
+    })
+    leftButton.addEventListener("touchcancel", (e) => {
+      e.preventDefault()
+      handleButtonEnd()
+    })
+
+    // Touch events for right button
+    rightButton.addEventListener("touchstart", (e) => {
+      e.preventDefault()
+      handleRightStart()
+    })
+    rightButton.addEventListener("touchend", (e) => {
+      e.preventDefault()
+      handleButtonEnd()
+    })
+    rightButton.addEventListener("touchcancel", (e) => {
+      e.preventDefault()
+      handleButtonEnd()
+    })
+
+    // Mouse events for desktop testing
+    leftButton.addEventListener("mousedown", handleLeftStart)
+    leftButton.addEventListener("mouseup", handleButtonEnd)
+    leftButton.addEventListener("mouseleave", handleButtonEnd)
+
+    rightButton.addEventListener("mousedown", handleRightStart)
+    rightButton.addEventListener("mouseup", handleButtonEnd)
+    rightButton.addEventListener("mouseleave", handleButtonEnd)
+
+    controlsContainer.appendChild(leftButton)
+    controlsContainer.appendChild(rightButton)
+    controls.appendChild(controlsContainer)
+
+    return controls
   }
 
   private initializePreview(): void {

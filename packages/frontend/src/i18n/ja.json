@@ -228,7 +228,10 @@
     "moveLeft": "左移動",
     "moveRight": "右移動",
     "cameraHint": "ドラッグで回転 • スクロールでズーム",
+    "cameraHintMobile": "スワイプで回転 • ピンチでズーム",
     "firstTo11": "先に11点取った方が勝利！",
+    "tapToRotate": "画面をタップして回転",
+    "useButtons": "画面下のボタンで操作",
     "confirmQuit": {
       "title": "ゲームを終了しますか？",
       "message": "本当に終了しますか？進行状況は失われます。",

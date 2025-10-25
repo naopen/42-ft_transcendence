@@ -71,6 +71,10 @@ export class PongEngine {
 
   // Input state
   private keys: Record<string, boolean> = {}
+  private mobileButtonState: {
+    leftPressed: boolean
+    rightPressed: boolean
+  } = { leftPressed: false, rightPressed: false }
 
   constructor(config: PongGameConfig) {
     this.config = config
@@ -244,19 +248,31 @@ export class PongEngine {
     const deltaX = this.PADDLE_SPEED
     const maxX = this.FIELD_WIDTH / 2 - 1
 
-    // Player 1 controls (A/D)
-    if (this.keys["a"] && this.paddle1.position.x > -maxX) {
+    // Player 1 controls (A/D or mobile buttons)
+    if (
+      (this.keys["a"] || this.mobileButtonState.leftPressed) &&
+      this.paddle1.position.x > -maxX
+    ) {
       this.paddle1.position.x -= deltaX
     }
-    if (this.keys["d"] && this.paddle1.position.x < maxX) {
+    if (
+      (this.keys["d"] || this.mobileButtonState.rightPressed) &&
+      this.paddle1.position.x < maxX
+    ) {
       this.paddle1.position.x += deltaX
     }
 
-    // Player 2 controls (Arrow Left/Right)
-    if (this.keys["arrowleft"] && this.paddle2.position.x > -maxX) {
+    // Player 2 controls (Arrow Left/Right or mobile buttons)
+    if (
+      (this.keys["arrowleft"] || this.mobileButtonState.leftPressed) &&
+      this.paddle2.position.x > -maxX
+    ) {
       this.paddle2.position.x -= deltaX
     }
-    if (this.keys["arrowright"] && this.paddle2.position.x < maxX) {
+    if (
+      (this.keys["arrowright"] || this.mobileButtonState.rightPressed) &&
+      this.paddle2.position.x < maxX
+    ) {
       this.paddle2.position.x += deltaX
     }
   }
@@ -422,10 +438,16 @@ export class PongEngine {
     const leftKey = this.isPlayer1 ? "a" : "arrowleft"
     const rightKey = this.isPlayer1 ? "d" : "arrowright"
 
-    if (this.keys[leftKey] && myPaddle.position.x > -maxX) {
+    if (
+      (this.keys[leftKey] || this.mobileButtonState.leftPressed) &&
+      myPaddle.position.x > -maxX
+    ) {
       myPaddle.position.x -= deltaX
     }
-    if (this.keys[rightKey] && myPaddle.position.x < maxX) {
+    if (
+      (this.keys[rightKey] || this.mobileButtonState.rightPressed) &&
+      myPaddle.position.x < maxX
+    ) {
       myPaddle.position.x += deltaX
     }
   }
@@ -495,6 +517,14 @@ export class PongEngine {
     this.state.player1Score = finalScore.player1
     this.state.player2Score = finalScore.player2
     this.endGame(winner)
+  }
+
+  /**
+   * Set mobile button state (for touch controls)
+   */
+  public setMobileButtonState(left: boolean, right: boolean): void {
+    this.mobileButtonState.leftPressed = left
+    this.mobileButtonState.rightPressed = right
   }
 
   /**
