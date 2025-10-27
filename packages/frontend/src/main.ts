@@ -3,6 +3,7 @@ import { Button } from "./components/Button"
 import { i18n } from "./i18n"
 import { Router } from "./router"
 import { authStore } from "./stores/auth.store"
+import { createSafeImage } from "./utils/sanitize"
 
 class App {
   private router: Router
@@ -234,7 +235,12 @@ class App {
       avatar.className =
         "w-8 h-8 rounded-full bg-42-accent flex items-center justify-center text-sm font-bold"
       if (authState.user.avatarUrl) {
-        avatar.innerHTML = `<img src="${authState.user.avatarUrl}" alt="${authState.user.displayName}" class="w-full h-full rounded-full object-cover" />`
+        const img = createSafeImage(
+          authState.user.avatarUrl,
+          authState.user.displayName,
+          "w-full h-full rounded-full object-cover",
+        )
+        avatar.appendChild(img)
       } else {
         avatar.textContent = authState.user.displayName.charAt(0).toUpperCase()
       }
@@ -269,7 +275,12 @@ class App {
         mobileAvatar.className =
           "w-10 h-10 rounded-full bg-42-accent flex items-center justify-center text-base font-bold"
         if (authState.user.avatarUrl) {
-          mobileAvatar.innerHTML = `<img src="${authState.user.avatarUrl}" alt="${authState.user.displayName}" class="w-full h-full rounded-full object-cover" />`
+          const img = createSafeImage(
+            authState.user.avatarUrl,
+            authState.user.displayName,
+            "w-full h-full rounded-full object-cover",
+          )
+          mobileAvatar.appendChild(img)
         } else {
           mobileAvatar.textContent = authState.user.displayName
             .charAt(0)

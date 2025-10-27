@@ -5,6 +5,7 @@ import { i18n } from "../i18n"
 import { apiClient } from "../services/api"
 import { gameService } from "../services/game.service"
 import { authStore } from "../stores/auth.store"
+import { createSafeImage } from "../utils/sanitize"
 
 import type { GameSession, GameStats, PublicUser } from "../types"
 
@@ -131,7 +132,12 @@ export class ProfilePage {
       "w-24 h-24 rounded-full bg-42-accent flex items-center justify-center text-4xl"
 
     if (this.user!.avatar_url) {
-      avatar.innerHTML = `<img src="${this.user!.avatar_url}" alt="${this.user!.display_name}" class="w-full h-full rounded-full object-cover" />`
+      const img = createSafeImage(
+        this.user!.avatar_url,
+        this.user!.display_name,
+        "w-full h-full rounded-full object-cover",
+      )
+      avatar.appendChild(img)
     } else {
       avatar.textContent = this.user!.display_name.charAt(0).toUpperCase()
     }
@@ -141,10 +147,17 @@ export class ProfilePage {
     // User Info
     const info = document.createElement("div")
     info.className = "flex-1"
-    info.innerHTML = `
-      <h1 class="text-4xl font-bold mb-2 text-white">${this.user!.display_name}</h1>
-      <p class="text-gray-400">${i18n.t("profile.memberSince")}: ${new Date(this.user!.created_at).toLocaleDateString()}</p>
-    `
+
+    const title = document.createElement("h1")
+    title.className = "text-4xl font-bold mb-2 text-white"
+    title.textContent = this.user!.display_name
+
+    const memberSince = document.createElement("p")
+    memberSince.className = "text-gray-400"
+    memberSince.textContent = `${i18n.t("profile.memberSince")}: ${new Date(this.user!.created_at).toLocaleDateString()}`
+
+    info.appendChild(title)
+    info.appendChild(memberSince)
 
     header.appendChild(info)
 
