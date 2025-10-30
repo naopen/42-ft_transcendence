@@ -231,10 +231,11 @@ export class GamePage {
     // Left side (Player 1): Top-left and Bottom-left
     // Right side (Player 2): Top-right and Bottom-right
 
-    // Player 1 Left button (Top-left corner)
+    // Player 1 Left button (Top-left corner - below header)
     const p1LeftButton = document.createElement("button")
     p1LeftButton.className =
-      "absolute top-4 left-4 bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
+      "absolute left-4 bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
+    p1LeftButton.style.top = this.isMobile ? "140px" : "100px"
     p1LeftButton.innerHTML = `
       <div class="flex flex-col items-center gap-1">
         <div class="text-xs opacity-80">1P</div>
@@ -264,10 +265,11 @@ export class GamePage {
       </div>
     `
 
-    // Player 2 Right button (Top-right corner)
+    // Player 2 Right button (Top-right corner - below header)
     const p2RightButton = document.createElement("button")
     p2RightButton.className =
-      "absolute top-4 right-4 bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
+      "absolute right-4 bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
+    p2RightButton.style.top = this.isMobile ? "140px" : "100px"
     p2RightButton.innerHTML = `
       <div class="flex flex-col items-center gap-1">
         <div class="text-3xl">→</div>
@@ -275,41 +277,44 @@ export class GamePage {
       </div>
     `
 
-    // Player 1 button handlers
+    // Player 1 button handlers - use keyboard keys 'a' and 'd'
     const handleP1LeftStart = () => {
       if (this.engine) {
-        const currentKeys = this.engine.getState()
-        this.engine.setMobileButtonState(true, false)
+        ;(this.engine as any).keys = (this.engine as any).keys || {}
+        ;(this.engine as any).keys["a"] = true
       }
     }
 
     const handleP1RightStart = () => {
       if (this.engine) {
-        this.engine.setMobileButtonState(false, true)
+        ;(this.engine as any).keys = (this.engine as any).keys || {}
+        ;(this.engine as any).keys["d"] = true
       }
     }
 
-    const handleP1ButtonEnd = () => {
+    const handleP1LeftEnd = () => {
       if (this.engine) {
-        this.engine.setMobileButtonState(false, false)
+        ;(this.engine as any).keys = (this.engine as any).keys || {}
+        ;(this.engine as any).keys["a"] = false
       }
     }
 
-    // Player 2 button handlers (need to track separately)
-    let p2LeftPressed = false
-    let p2RightPressed = false
+    const handleP1RightEnd = () => {
+      if (this.engine) {
+        ;(this.engine as any).keys = (this.engine as any).keys || {}
+        ;(this.engine as any).keys["d"] = false
+      }
+    }
 
+    // Player 2 button handlers - use arrow keys
     const handleP2LeftStart = () => {
-      p2LeftPressed = true
       if (this.engine) {
-        // Directly manipulate keys for Player 2
         ;(this.engine as any).keys = (this.engine as any).keys || {}
         ;(this.engine as any).keys["arrowleft"] = true
       }
     }
 
     const handleP2RightStart = () => {
-      p2RightPressed = true
       if (this.engine) {
         ;(this.engine as any).keys = (this.engine as any).keys || {}
         ;(this.engine as any).keys["arrowright"] = true
@@ -317,7 +322,6 @@ export class GamePage {
     }
 
     const handleP2LeftEnd = () => {
-      p2LeftPressed = false
       if (this.engine) {
         ;(this.engine as any).keys = (this.engine as any).keys || {}
         ;(this.engine as any).keys["arrowleft"] = false
@@ -325,7 +329,6 @@ export class GamePage {
     }
 
     const handleP2RightEnd = () => {
-      p2RightPressed = false
       if (this.engine) {
         ;(this.engine as any).keys = (this.engine as any).keys || {}
         ;(this.engine as any).keys["arrowright"] = false
@@ -339,15 +342,15 @@ export class GamePage {
     })
     p1LeftButton.addEventListener("touchend", (e) => {
       e.preventDefault()
-      handleP1ButtonEnd()
+      handleP1LeftEnd()
     })
     p1LeftButton.addEventListener("touchcancel", (e) => {
       e.preventDefault()
-      handleP1ButtonEnd()
+      handleP1LeftEnd()
     })
     p1LeftButton.addEventListener("mousedown", handleP1LeftStart)
-    p1LeftButton.addEventListener("mouseup", handleP1ButtonEnd)
-    p1LeftButton.addEventListener("mouseleave", handleP1ButtonEnd)
+    p1LeftButton.addEventListener("mouseup", handleP1LeftEnd)
+    p1LeftButton.addEventListener("mouseleave", handleP1LeftEnd)
 
     // Player 1 Right button events
     p1RightButton.addEventListener("touchstart", (e) => {
@@ -356,15 +359,15 @@ export class GamePage {
     })
     p1RightButton.addEventListener("touchend", (e) => {
       e.preventDefault()
-      handleP1ButtonEnd()
+      handleP1RightEnd()
     })
     p1RightButton.addEventListener("touchcancel", (e) => {
       e.preventDefault()
-      handleP1ButtonEnd()
+      handleP1RightEnd()
     })
     p1RightButton.addEventListener("mousedown", handleP1RightStart)
-    p1RightButton.addEventListener("mouseup", handleP1ButtonEnd)
-    p1RightButton.addEventListener("mouseleave", handleP1ButtonEnd)
+    p1RightButton.addEventListener("mouseup", handleP1RightEnd)
+    p1RightButton.addEventListener("mouseleave", handleP1RightEnd)
 
     // Player 2 Left button events
     p2LeftButton.addEventListener("touchstart", (e) => {
