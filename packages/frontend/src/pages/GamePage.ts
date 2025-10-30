@@ -225,89 +225,185 @@ export class GamePage {
 
   private createMobileControls(): HTMLDivElement {
     const controls = document.createElement("div")
-    controls.className =
-      "fixed bottom-0 left-0 right-0 bg-42-dark border-t border-gray-700 p-4 z-10"
+    controls.className = "fixed inset-0 pointer-events-none z-10"
 
-    const controlsContainer = document.createElement("div")
-    controlsContainer.className = "max-w-7xl mx-auto grid grid-cols-2 gap-8"
+    // Create 4 corner buttons for local 2-player mode
+    // Left side (Player 1): Top-left and Bottom-left
+    // Right side (Player 2): Top-right and Bottom-right
 
-    // Left button
-    const leftButton = document.createElement("button")
-    leftButton.className =
-      "bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-8 px-6 rounded-xl shadow-lg active:shadow-inner text-2xl select-none touch-manipulation flex items-center justify-center gap-3"
-    leftButton.innerHTML = `
-      <span class="text-4xl">←</span>
-      <span>${i18n.t("game.moveLeft")}</span>
+    // Player 1 Left button (Top-left corner)
+    const p1LeftButton = document.createElement("button")
+    p1LeftButton.className =
+      "absolute top-4 left-4 bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
+    p1LeftButton.innerHTML = `
+      <div class="flex flex-col items-center gap-1">
+        <div class="text-xs opacity-80">1P</div>
+        <div class="text-3xl">←</div>
+      </div>
     `
 
-    // Right button
-    const rightButton = document.createElement("button")
-    rightButton.className =
-      "bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-8 px-6 rounded-xl shadow-lg active:shadow-inner text-2xl select-none touch-manipulation flex items-center justify-center gap-3"
-    rightButton.innerHTML = `
-      <span>${i18n.t("game.moveRight")}</span>
-      <span class="text-4xl">→</span>
+    // Player 1 Right button (Bottom-left corner)
+    const p1RightButton = document.createElement("button")
+    p1RightButton.className =
+      "absolute bottom-4 left-4 bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
+    p1RightButton.innerHTML = `
+      <div class="flex flex-col items-center gap-1">
+        <div class="text-3xl">→</div>
+        <div class="text-xs opacity-80">1P</div>
+      </div>
     `
 
-    // Button event handlers
-    const handleLeftStart = () => {
+    // Player 2 Left button (Bottom-right corner)
+    const p2LeftButton = document.createElement("button")
+    p2LeftButton.className =
+      "absolute bottom-4 right-4 bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
+    p2LeftButton.innerHTML = `
+      <div class="flex flex-col items-center gap-1">
+        <div class="text-xs opacity-80">2P</div>
+        <div class="text-3xl">←</div>
+      </div>
+    `
+
+    // Player 2 Right button (Top-right corner)
+    const p2RightButton = document.createElement("button")
+    p2RightButton.className =
+      "absolute top-4 right-4 bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
+    p2RightButton.innerHTML = `
+      <div class="flex flex-col items-center gap-1">
+        <div class="text-3xl">→</div>
+        <div class="text-xs opacity-80">2P</div>
+      </div>
+    `
+
+    // Player 1 button handlers
+    const handleP1LeftStart = () => {
       if (this.engine) {
+        const currentKeys = this.engine.getState()
         this.engine.setMobileButtonState(true, false)
       }
     }
 
-    const handleRightStart = () => {
+    const handleP1RightStart = () => {
       if (this.engine) {
         this.engine.setMobileButtonState(false, true)
       }
     }
 
-    const handleButtonEnd = () => {
+    const handleP1ButtonEnd = () => {
       if (this.engine) {
         this.engine.setMobileButtonState(false, false)
       }
     }
 
-    // Touch events for left button
-    leftButton.addEventListener("touchstart", (e) => {
-      e.preventDefault()
-      handleLeftStart()
-    })
-    leftButton.addEventListener("touchend", (e) => {
-      e.preventDefault()
-      handleButtonEnd()
-    })
-    leftButton.addEventListener("touchcancel", (e) => {
-      e.preventDefault()
-      handleButtonEnd()
-    })
+    // Player 2 button handlers (need to track separately)
+    let p2LeftPressed = false
+    let p2RightPressed = false
 
-    // Touch events for right button
-    rightButton.addEventListener("touchstart", (e) => {
-      e.preventDefault()
-      handleRightStart()
-    })
-    rightButton.addEventListener("touchend", (e) => {
-      e.preventDefault()
-      handleButtonEnd()
-    })
-    rightButton.addEventListener("touchcancel", (e) => {
-      e.preventDefault()
-      handleButtonEnd()
-    })
+    const handleP2LeftStart = () => {
+      p2LeftPressed = true
+      if (this.engine) {
+        // Directly manipulate keys for Player 2
+        ;(this.engine as any).keys = (this.engine as any).keys || {}
+        ;(this.engine as any).keys["arrowleft"] = true
+      }
+    }
 
-    // Mouse events for desktop testing
-    leftButton.addEventListener("mousedown", handleLeftStart)
-    leftButton.addEventListener("mouseup", handleButtonEnd)
-    leftButton.addEventListener("mouseleave", handleButtonEnd)
+    const handleP2RightStart = () => {
+      p2RightPressed = true
+      if (this.engine) {
+        ;(this.engine as any).keys = (this.engine as any).keys || {}
+        ;(this.engine as any).keys["arrowright"] = true
+      }
+    }
 
-    rightButton.addEventListener("mousedown", handleRightStart)
-    rightButton.addEventListener("mouseup", handleButtonEnd)
-    rightButton.addEventListener("mouseleave", handleButtonEnd)
+    const handleP2LeftEnd = () => {
+      p2LeftPressed = false
+      if (this.engine) {
+        ;(this.engine as any).keys = (this.engine as any).keys || {}
+        ;(this.engine as any).keys["arrowleft"] = false
+      }
+    }
 
-    controlsContainer.appendChild(leftButton)
-    controlsContainer.appendChild(rightButton)
-    controls.appendChild(controlsContainer)
+    const handleP2RightEnd = () => {
+      p2RightPressed = false
+      if (this.engine) {
+        ;(this.engine as any).keys = (this.engine as any).keys || {}
+        ;(this.engine as any).keys["arrowright"] = false
+      }
+    }
+
+    // Player 1 Left button events
+    p1LeftButton.addEventListener("touchstart", (e) => {
+      e.preventDefault()
+      handleP1LeftStart()
+    })
+    p1LeftButton.addEventListener("touchend", (e) => {
+      e.preventDefault()
+      handleP1ButtonEnd()
+    })
+    p1LeftButton.addEventListener("touchcancel", (e) => {
+      e.preventDefault()
+      handleP1ButtonEnd()
+    })
+    p1LeftButton.addEventListener("mousedown", handleP1LeftStart)
+    p1LeftButton.addEventListener("mouseup", handleP1ButtonEnd)
+    p1LeftButton.addEventListener("mouseleave", handleP1ButtonEnd)
+
+    // Player 1 Right button events
+    p1RightButton.addEventListener("touchstart", (e) => {
+      e.preventDefault()
+      handleP1RightStart()
+    })
+    p1RightButton.addEventListener("touchend", (e) => {
+      e.preventDefault()
+      handleP1ButtonEnd()
+    })
+    p1RightButton.addEventListener("touchcancel", (e) => {
+      e.preventDefault()
+      handleP1ButtonEnd()
+    })
+    p1RightButton.addEventListener("mousedown", handleP1RightStart)
+    p1RightButton.addEventListener("mouseup", handleP1ButtonEnd)
+    p1RightButton.addEventListener("mouseleave", handleP1ButtonEnd)
+
+    // Player 2 Left button events
+    p2LeftButton.addEventListener("touchstart", (e) => {
+      e.preventDefault()
+      handleP2LeftStart()
+    })
+    p2LeftButton.addEventListener("touchend", (e) => {
+      e.preventDefault()
+      handleP2LeftEnd()
+    })
+    p2LeftButton.addEventListener("touchcancel", (e) => {
+      e.preventDefault()
+      handleP2LeftEnd()
+    })
+    p2LeftButton.addEventListener("mousedown", handleP2LeftStart)
+    p2LeftButton.addEventListener("mouseup", handleP2LeftEnd)
+    p2LeftButton.addEventListener("mouseleave", handleP2LeftEnd)
+
+    // Player 2 Right button events
+    p2RightButton.addEventListener("touchstart", (e) => {
+      e.preventDefault()
+      handleP2RightStart()
+    })
+    p2RightButton.addEventListener("touchend", (e) => {
+      e.preventDefault()
+      handleP2RightEnd()
+    })
+    p2RightButton.addEventListener("touchcancel", (e) => {
+      e.preventDefault()
+      handleP2RightEnd()
+    })
+    p2RightButton.addEventListener("mousedown", handleP2RightStart)
+    p2RightButton.addEventListener("mouseup", handleP2RightEnd)
+    p2RightButton.addEventListener("mouseleave", handleP2RightEnd)
+
+    controls.appendChild(p1LeftButton)
+    controls.appendChild(p1RightButton)
+    controls.appendChild(p2LeftButton)
+    controls.appendChild(p2RightButton)
 
     return controls
   }
