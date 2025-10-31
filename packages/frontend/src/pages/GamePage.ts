@@ -237,9 +237,9 @@ export class GamePage {
       "absolute left-4 bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
     p1LeftButton.style.top = this.isMobile ? "60px" : "50px"
     p1LeftButton.innerHTML = `
-      <div class="flex flex-col items-center gap-1">
-        <div class="text-xs opacity-80">1P</div>
-        <div class="text-3xl">←</div>
+      <div class="flex flex-row items-center gap-2">
+        <div class="text-3xl">↑</div>
+        <div class="text-2xl font-bold">1P</div>
       </div>
     `
 
@@ -248,9 +248,9 @@ export class GamePage {
     p1RightButton.className =
       "absolute bottom-4 left-4 bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
     p1RightButton.innerHTML = `
-      <div class="flex flex-col items-center gap-1">
-        <div class="text-3xl">→</div>
-        <div class="text-xs opacity-80">1P</div>
+      <div class="flex flex-row items-center gap-2">
+        <div class="text-3xl">↓</div>
+        <div class="text-2xl font-bold">1P</div>
       </div>
     `
 
@@ -259,9 +259,9 @@ export class GamePage {
     p2RightButton.className =
       "absolute bottom-4 right-4 bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
     p2RightButton.innerHTML = `
-      <div class="flex flex-col items-center gap-1">
-        <div class="text-xs opacity-80">2P</div>
-        <div class="text-3xl">→</div>
+      <div class="flex flex-row items-center gap-2">
+        <div class="text-2xl font-bold">2P</div>
+        <div class="text-3xl">↓</div>
       </div>
     `
 
@@ -271,9 +271,9 @@ export class GamePage {
       "absolute right-4 bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
     p2LeftButton.style.top = this.isMobile ? "60px" : "50px"
     p2LeftButton.innerHTML = `
-      <div class="flex flex-col items-center gap-1">
-        <div class="text-3xl">←</div>
-        <div class="text-xs opacity-80">2P</div>
+      <div class="flex flex-row items-center gap-2">
+        <div class="text-2xl font-bold">2P</div>
+        <div class="text-3xl">↑</div>
       </div>
     `
 
