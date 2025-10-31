@@ -231,11 +231,11 @@ export class GamePage {
     // Left side (Player 1): Top-left and Bottom-left
     // Right side (Player 2): Top-right and Bottom-right
 
-    // Player 1 Left button (Top-left corner - below header)
+    // Player 1 Left button (Top-left corner - aligned with header bottom)
     const p1LeftButton = document.createElement("button")
     p1LeftButton.className =
       "absolute left-4 bg-gradient-to-br from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
-    p1LeftButton.style.top = this.isMobile ? "140px" : "100px"
+    p1LeftButton.style.top = this.isMobile ? "60px" : "50px"
     p1LeftButton.innerHTML = `
       <div class="flex flex-col items-center gap-1">
         <div class="text-xs opacity-80">1P</div>
@@ -254,25 +254,25 @@ export class GamePage {
       </div>
     `
 
-    // Player 2 Left button (Bottom-right corner)
-    const p2LeftButton = document.createElement("button")
-    p2LeftButton.className =
+    // Player 2 Right button (Bottom-right corner) - 2Pは左右逆
+    const p2RightButton = document.createElement("button")
+    p2RightButton.className =
       "absolute bottom-4 right-4 bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
-    p2LeftButton.innerHTML = `
+    p2RightButton.innerHTML = `
       <div class="flex flex-col items-center gap-1">
         <div class="text-xs opacity-80">2P</div>
-        <div class="text-3xl">←</div>
+        <div class="text-3xl">→</div>
       </div>
     `
 
-    // Player 2 Right button (Top-right corner - below header)
-    const p2RightButton = document.createElement("button")
-    p2RightButton.className =
+    // Player 2 Left button (Top-right corner - aligned with header bottom) - 2Pは左右逆
+    const p2LeftButton = document.createElement("button")
+    p2LeftButton.className =
       "absolute right-4 bg-gradient-to-br from-red-600 to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-6 px-8 rounded-xl shadow-lg active:shadow-inner text-xl select-none touch-manipulation pointer-events-auto"
-    p2RightButton.style.top = this.isMobile ? "140px" : "100px"
-    p2RightButton.innerHTML = `
+    p2LeftButton.style.top = this.isMobile ? "60px" : "50px"
+    p2LeftButton.innerHTML = `
       <div class="flex flex-col items-center gap-1">
-        <div class="text-3xl">→</div>
+        <div class="text-3xl">←</div>
         <div class="text-xs opacity-80">2P</div>
       </div>
     `
@@ -369,23 +369,6 @@ export class GamePage {
     p1RightButton.addEventListener("mouseup", handleP1RightEnd)
     p1RightButton.addEventListener("mouseleave", handleP1RightEnd)
 
-    // Player 2 Left button events
-    p2LeftButton.addEventListener("touchstart", (e) => {
-      e.preventDefault()
-      handleP2LeftStart()
-    })
-    p2LeftButton.addEventListener("touchend", (e) => {
-      e.preventDefault()
-      handleP2LeftEnd()
-    })
-    p2LeftButton.addEventListener("touchcancel", (e) => {
-      e.preventDefault()
-      handleP2LeftEnd()
-    })
-    p2LeftButton.addEventListener("mousedown", handleP2LeftStart)
-    p2LeftButton.addEventListener("mouseup", handleP2LeftEnd)
-    p2LeftButton.addEventListener("mouseleave", handleP2LeftEnd)
-
     // Player 2 Right button events
     p2RightButton.addEventListener("touchstart", (e) => {
       e.preventDefault()
@@ -403,10 +386,27 @@ export class GamePage {
     p2RightButton.addEventListener("mouseup", handleP2RightEnd)
     p2RightButton.addEventListener("mouseleave", handleP2RightEnd)
 
+    // Player 2 Left button events
+    p2LeftButton.addEventListener("touchstart", (e) => {
+      e.preventDefault()
+      handleP2LeftStart()
+    })
+    p2LeftButton.addEventListener("touchend", (e) => {
+      e.preventDefault()
+      handleP2LeftEnd()
+    })
+    p2LeftButton.addEventListener("touchcancel", (e) => {
+      e.preventDefault()
+      handleP2LeftEnd()
+    })
+    p2LeftButton.addEventListener("mousedown", handleP2LeftStart)
+    p2LeftButton.addEventListener("mouseup", handleP2LeftEnd)
+    p2LeftButton.addEventListener("mouseleave", handleP2LeftEnd)
+
     controls.appendChild(p1LeftButton)
     controls.appendChild(p1RightButton)
-    controls.appendChild(p2LeftButton)
     controls.appendChild(p2RightButton)
+    controls.appendChild(p2LeftButton)
 
     return controls
   }
