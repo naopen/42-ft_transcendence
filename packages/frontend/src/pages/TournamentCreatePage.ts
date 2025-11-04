@@ -46,13 +46,16 @@ export class TournamentCreatePage {
 
     // Add initial 3 players
     for (let i = 0; i < 3; i++) {
-      this.addPlayerInput()
+      this.addPlayerInput(false)
     }
 
     this.render()
+
+    // Focus on tournament name input
+    setTimeout(() => this.tournamentNameInput.focus(), 100)
   }
 
-  private addPlayerInput(): void {
+  private addPlayerInput(shouldFocus = true): void {
     if (this.playerInputs.length >= 16) {
       Alert.warning(i18n.t("tournament.create.maxPlayers"))
       return
@@ -72,7 +75,9 @@ export class TournamentCreatePage {
     this.updatePlayersContainer()
 
     // Focus on new input
-    setTimeout(() => playerInput.focus(), 100)
+    if (shouldFocus) {
+      setTimeout(() => playerInput.focus(), 100)
+    }
   }
 
   private removePlayerInput(index: number): void {
