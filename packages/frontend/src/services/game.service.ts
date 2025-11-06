@@ -92,11 +92,15 @@ export class GameService {
     userId: number,
     page = 1,
     limit = 50,
-  ): Promise<GameSessionWithPlayers[]> {
-    const response = await apiClient.get<{ history: GameSessionWithPlayers[] }>(
-      `/api/games/user/${userId}/history?page=${page}&limit=${limit}`,
-    )
-    return response.history
+  ): Promise<{
+    history: GameSessionWithPlayers[]
+    pagination: { page: number; limit: number; total: number }
+  }> {
+    const response = await apiClient.get<{
+      history: GameSessionWithPlayers[]
+      pagination: { page: number; limit: number; total: number }
+    }>(`/api/games/user/${userId}/history?page=${page}&limit=${limit}`)
+    return response
   }
 
   /**

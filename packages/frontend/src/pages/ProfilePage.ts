@@ -40,11 +40,12 @@ export class ProfilePage {
       if (authState.isAuthenticated) {
         try {
           this.stats = await gameService.getUserStats(this.userId)
-          this.recentGames = await gameService.getUserGameHistory(
+          const response = await gameService.getUserGameHistory(
             this.userId,
             1,
             10,
           )
+          this.recentGames = response.history
         } catch (error) {
           // Stats may not be available for all users
           console.warn("Failed to load stats:", error)

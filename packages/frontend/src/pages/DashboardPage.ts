@@ -80,11 +80,8 @@ export class DashboardPage {
 
       // Load stats and history
       this.stats = await gameService.getUserStats(this.userId)
-      this.gameHistory = await gameService.getUserGameHistory(
-        this.userId,
-        1,
-        50,
-      )
+      const response = await gameService.getUserGameHistory(this.userId, 1, 50)
+      this.gameHistory = response.history
 
       this.render()
     } catch (error: any) {

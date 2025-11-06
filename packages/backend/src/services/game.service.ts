@@ -214,6 +214,23 @@ export class GameService {
   }
 
   /**
+   * Get user game history count
+   */
+  getUserGameHistoryCount(userId: number): number {
+    const result = db
+      .prepare(
+        `
+      SELECT COUNT(*) as count FROM game_sessions
+      WHERE (player1_id = ? OR player2_id = ?)
+        AND completed_at IS NOT NULL
+    `,
+      )
+      .get(userId, userId) as { count: number }
+
+    return result.count
+  }
+
+  /**
    * Get user game history with player details
    */
   getUserGameHistoryWithPlayers(userId: number, limit = 50, offset = 0) {

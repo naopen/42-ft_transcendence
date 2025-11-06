@@ -38,6 +38,7 @@ export class MatchHistoryPage {
   private gameHistory: GameSessionWithPlayers[] = []
   private currentPage = 1
   private pageSize = 10
+  private totalItems = 0
   private selectedMatch: GameSessionWithPlayers | null = null
 
   constructor(userId: number) {
@@ -75,11 +76,14 @@ export class MatchHistoryPage {
       this.renderLoading()
 
       this.currentPage = page
-      this.gameHistory = await gameService.getUserGameHistory(
+      const response = await gameService.getUserGameHistory(
         this.userId,
         page,
         this.pageSize,
       )
+
+      this.gameHistory = response.history
+      this.totalItems = response.pagination.total
 
       this.render()
     } catch (error: any) {
@@ -375,6 +379,9 @@ export class MatchHistoryPage {
     paginationContainer.className =
       "flex justify-center items-center gap-4 mt-8"
 
+    // Calculate total pages
+    const totalPages = Math.ceil(this.totalItems / this.pageSize)
+
     // Previous button
     const prevBtn = new Button({
       text: i18n.t("matchHistory.pagination.previous"),
@@ -388,9 +395,13 @@ export class MatchHistoryPage {
     // Page indicator
     const pageIndicator = document.createElement("span")
     pageIndicator.className = "text-gray-300"
-    pageIndicator.textContent = i18n.t("matchHistory.pagination.page", {
-      page: this.currentPage,
-    })
+    if (totalPages === 0) {
+      pageIndicator.textContent = i18n.t("matchHistory.pagination.page", {
+        page: 0,
+      })
+    } else {
+      pageIndicator.textContent = `Page ${this.currentPage} of ${totalPages}`
+    }
     paginationContainer.appendChild(pageIndicator)
 
     // Next button
@@ -398,7 +409,7 @@ export class MatchHistoryPage {
       text: i18n.t("matchHistory.pagination.next"),
       variant: "secondary",
       size: "sm",
-      disabled: this.gameHistory.length < this.pageSize,
+      disabled: this.currentPage >= totalPages || totalPages === 0,
       onClick: () => this.loadData(this.currentPage + 1),
     })
     paginationContainer.appendChild(nextBtn.getElement())

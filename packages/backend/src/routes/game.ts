@@ -156,12 +156,14 @@ export async function gameRoutes(fastify: FastifyInstance) {
         limitNum,
         offset,
       )
+      const total = gameService.getUserGameHistoryCount(userId)
 
       return {
         history,
         pagination: {
           page: pageNum,
           limit: limitNum,
+          total,
         },
       }
     },
