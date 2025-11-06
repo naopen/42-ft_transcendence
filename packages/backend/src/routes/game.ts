@@ -151,7 +151,11 @@ export async function gameRoutes(fastify: FastifyInstance) {
       const limitNum = parseInt(limit, 10)
       const offset = (pageNum - 1) * limitNum
 
-      const history = gameService.getUserGameHistory(userId, limitNum, offset)
+      const history = gameService.getUserGameHistoryWithPlayers(
+        userId,
+        limitNum,
+        offset,
+      )
 
       return {
         history,

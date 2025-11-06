@@ -212,6 +212,37 @@ export class GameService {
       player2,
     }
   }
+
+  /**
+   * Get user game history with player details
+   */
+  getUserGameHistoryWithPlayers(userId: number, limit = 50, offset = 0) {
+    const sessions = this.getUserGameHistory(userId, limit, offset)
+
+    return sessions.map((session) => {
+      const player1 = session.player1_id
+        ? db
+            .prepare(
+              "SELECT id, display_name, avatar_url, created_at FROM users WHERE id = ?",
+            )
+            .get(session.player1_id)
+        : null
+
+      const player2 = session.player2_id
+        ? db
+            .prepare(
+              "SELECT id, display_name, avatar_url, created_at FROM users WHERE id = ?",
+            )
+            .get(session.player2_id)
+        : null
+
+      return {
+        ...session,
+        player1,
+        player2,
+      }
+    })
+  }
 }
 
 export const gameService = new GameService()

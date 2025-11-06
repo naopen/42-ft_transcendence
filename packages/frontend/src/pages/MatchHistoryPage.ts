@@ -18,7 +18,7 @@ import { i18n } from "../i18n"
 import { gameService } from "../services/game.service"
 import { authStore } from "../stores/auth.store"
 
-import type { GameSession } from "../types"
+import type { GameSessionWithPlayers } from "../types"
 
 // Register Chart.js components
 Chart.register(
@@ -35,10 +35,10 @@ Chart.register(
 export class MatchHistoryPage {
   private container: HTMLDivElement
   private userId: number
-  private gameHistory: GameSession[] = []
+  private gameHistory: GameSessionWithPlayers[] = []
   private currentPage = 1
   private pageSize = 10
-  private selectedMatch: GameSession | null = null
+  private selectedMatch: GameSessionWithPlayers | null = null
 
   constructor(userId: number) {
     this.userId = userId
@@ -168,7 +168,10 @@ export class MatchHistoryPage {
     return listContainer
   }
 
-  private createMatchCard(match: GameSession, index: number): HTMLElement {
+  private createMatchCard(
+    match: GameSessionWithPlayers,
+    index: number,
+  ): HTMLElement {
     const authState = authStore.getState()
     const currentUserId = authState.user?.id
 
@@ -197,6 +200,10 @@ export class MatchHistoryPage {
       ? `${Math.floor(match.duration / 60)}:${String(match.duration % 60).padStart(2, "0")}`
       : "N/A"
 
+    // Get player names
+    const player1Name = match.player1?.display_name || "Player 1"
+    const player2Name = match.player2?.display_name || "Player 2"
+
     const cardContent = `
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
@@ -208,7 +215,7 @@ export class MatchHistoryPage {
               <span class="text-gray-400 text-sm">${i18n.t(`matchHistory.gameType.${match.game_type}`)}</span>
             </div>
             <div class="text-gray-300 font-mono text-xl">
-              ${match.player1_score} - ${match.player2_score}
+              ${player1Name} ${match.player1_score} - ${match.player2_score} ${player2Name}
             </div>
             <div class="text-gray-500 text-sm mt-1">
               ${matchDate} • ${duration}
@@ -293,8 +300,16 @@ export class MatchHistoryPage {
       : isWin
         ? "text-green-500"
         : "text-red-500"
+
+    // Get player names
+    const player1Name = match.player1?.display_name || "Player 1"
+    const player2Name = match.player2?.display_name || "Player 2"
+
     resultSection.innerHTML = `
       <div class="${resultColor} text-3xl font-bold mb-2">${resultText}</div>
+      <div class="text-gray-400 text-lg mb-2">
+        ${player1Name} vs ${player2Name}
+      </div>
       <div class="text-gray-300 font-mono text-4xl mb-4">
         ${match.player1_score} - ${match.player2_score}
       </div>
@@ -391,7 +406,7 @@ export class MatchHistoryPage {
     return paginationContainer
   }
 
-  private showMatchDetails(match: GameSession): void {
+  private showMatchDetails(match: GameSessionWithPlayers): void {
     this.selectedMatch = match
     this.render()
   }
