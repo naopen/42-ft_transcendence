@@ -11,9 +11,15 @@ export interface ButtonProps {
 
 export class Button {
   private element: HTMLButtonElement
+  private originalText: string
+  private originalHTML: string
 
   constructor(props: ButtonProps) {
+    this.originalText = props.text
+    this.originalHTML = ""
     this.element = this.create(props)
+    // Save original HTML after creation
+    this.originalHTML = this.element.innerHTML
   }
 
   private create(props: ButtonProps): HTMLButtonElement {
@@ -106,6 +112,10 @@ export class Button {
           <span>Loading...</span>
         </span>
       `
+    } else {
+      // Restore original state
+      this.element.disabled = false
+      this.element.innerHTML = this.originalHTML
     }
   }
 }
