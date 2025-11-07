@@ -200,13 +200,17 @@ export class OnlineGamePage {
   }
 
   private startPaddleUpdates(): void {
-    // Send paddle position to server every 50ms (20fps for input)
+    // Send paddle position to server at 60fps to match server tick rate
+    // This ensures smooth paddle movement synchronized with server updates
+    const PADDLE_UPDATE_RATE = 60 // Match server's 60 FPS
+    const PADDLE_UPDATE_INTERVAL = 1000 / PADDLE_UPDATE_RATE // ~16.67ms
+
     this.paddleUpdateInterval = window.setInterval(() => {
       if (this.engine) {
         const paddleX = this.engine.getCurrentPaddlePosition()
         socketService.sendPaddleMove(paddleX)
       }
-    }, 50)
+    }, PADDLE_UPDATE_INTERVAL)
   }
 
   private updateScore(player1Score: number, player2Score: number): void {
