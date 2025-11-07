@@ -260,6 +260,7 @@ export class TournamentCreatePage {
       Alert.error(
         error.message || i18n.t("tournament.create.errors.createFailed"),
       )
+      this.createButton.setLoading(false)
       this.createButton.setDisabled(false)
       this.createButton.updateText(i18n.t("tournament.create.createButton"))
     }

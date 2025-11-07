@@ -10,22 +10,24 @@ import {
 import { tournamentService } from "../services/tournament.service"
 
 // Validation schemas
+// Regex pattern for safe text input (English + Japanese + common symbols)
+// Includes: alphanumeric, spaces, common punctuation, hiragana, katakana, kanji
+const safeTextPattern =
+  /^[a-zA-Z0-9\s\-_!?.'\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uF900-\uFAFF\uFF01-\uFF9F]+$/
+
 const createTournamentSchema = z.object({
   name: z
     .string()
     .min(3)
     .max(50)
-    .regex(
-      /^[a-zA-Z0-9\s\-_!?.']+$/,
-      "Tournament name contains invalid characters",
-    ),
+    .regex(safeTextPattern, "Tournament name contains invalid characters"),
   aliases: z
     .array(
       z
         .string()
         .min(2)
         .max(20)
-        .regex(/^[a-zA-Z0-9\s\-_!?.']+$/, "Alias contains invalid characters"),
+        .regex(safeTextPattern, "Alias contains invalid characters"),
     )
     .min(3)
     .max(16),
