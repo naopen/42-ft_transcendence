@@ -1,9 +1,9 @@
 // API Configuration
-// Detect if we're on HTTPS and construct the backend URL accordingly
-let API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+// Use nginx proxy for all API requests (HTTPS)
+let API_BASE_URL = import.meta.env.VITE_API_URL || "https://localhost:8443"
 
-// In production, use HTTPS if the frontend is served over HTTPS
-if (typeof window !== "undefined" && window.location.protocol === "https:") {
+// Ensure HTTPS protocol for secure connections
+if (typeof window !== "undefined" && API_BASE_URL.startsWith("http://")) {
   API_BASE_URL = API_BASE_URL.replace(/^http:/, "https:")
 }
 

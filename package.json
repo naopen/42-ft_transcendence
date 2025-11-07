@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --write .",
-    "typecheck": "pnpm run --filter backend typecheck && pnpm run --filter frontend typecheck"
+    "typecheck": "pnpm run --filter backend typecheck && pnpm run --filter frontend typecheck",
+    "generate-certs": "bash ./scripts/generate-certs.sh",
+    "docker:up": "pnpm run generate-certs && docker-compose up --build",
+    "docker:down": "docker-compose down"
   },
   "keywords": [
     "pong",

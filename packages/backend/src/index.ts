@@ -30,6 +30,10 @@ type TypedSocket = Socket<
 
 dotenv.config()
 
+// Note: HTTPS termination is handled by nginx proxy
+// Backend runs on HTTP internally, nginx handles SSL/TLS
+console.log("🔐 HTTPS termination handled by nginx reverse proxy")
+
 const fastify = Fastify({
   logger: {
     level: process.env.NODE_ENV === "production" ? "info" : "debug",
@@ -49,7 +53,12 @@ async function start() {
       origin:
         process.env.NODE_ENV === "production"
           ? process.env.FRONTEND_URL || "https://your-frontend-url.onrender.com"
-          : ["http://localhost:8080", "http://localhost:5173"],
+          : [
+              "https://localhost:8443",
+              "https://localhost:5173",
+              "http://localhost:8080",
+              "http://localhost:5173",
+            ],
       credentials: true,
     })
 
@@ -86,7 +95,12 @@ async function start() {
           process.env.NODE_ENV === "production"
             ? process.env.FRONTEND_URL ||
               "https://your-frontend-url.onrender.com"
-            : ["http://localhost:8080", "http://localhost:5173"],
+            : [
+                "https://localhost:8443",
+                "https://localhost:5173",
+                "http://localhost:8080",
+                "http://localhost:5173",
+              ],
         credentials: true,
       },
       transports: ["websocket", "polling"],

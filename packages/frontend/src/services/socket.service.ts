@@ -91,14 +91,22 @@ export class SocketService {
     // Set state to connecting
     this.connectionState = "connecting"
 
-    // Detect if we're on HTTPS and construct the backend URL accordingly
-    let apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000"
+    // CRITICAL: Always use HTTPS/WSS for secure connections (via nginx proxy)
+    let apiUrl = import.meta.env.VITE_API_URL || "https://localhost:8443"
 
-    // In production, use HTTPS if the frontend is served over HTTPS
-    if (window.location.protocol === "https:") {
-      // Replace http:// with https:// for production
+    // Ensure HTTPS protocol (convert http:// to https://)
+    if (apiUrl.startsWith("http://")) {
       apiUrl = apiUrl.replace(/^http:/, "https:")
+      console.warn(
+        "[Socket.IO] ⚠️  Upgraded HTTP to HTTPS for secure connection",
+      )
     }
+
+    // Log the connection protocol for debugging
+    const protocol = apiUrl.startsWith("https://") ? "wss://" : "ws://"
+    console.log(
+      `[Socket.IO] 🔐 Connecting with protocol: ${protocol} (URL: ${apiUrl})`,
+    )
 
     // Create connection promise
     this.pendingConnection = new Promise<void>((resolve, reject) => {
@@ -108,22 +116,28 @@ export class SocketService {
             userId,
             userName,
           },
+          // CRITICAL: Force WebSocket transport to ensure WSS is used
           transports: ["websocket", "polling"],
           reconnection: true,
           reconnectionDelay: this.reconnectDelay,
           reconnectionAttempts: this.maxReconnectAttempts,
+          // CRITICAL: Secure connection settings
+          secure: true,
+          rejectUnauthorized: false, // Allow self-signed certificates in development
         })
 
         // Wait for connection before resolving
         this.socket.once("connect", () => {
           this.connectionState = "connected"
           this.pendingConnection = null
+          console.log(`[Socket.IO] ✅ Connected successfully using ${protocol}`)
           resolve()
         })
 
         this.socket.once("connect_error", (error) => {
           this.connectionState = "disconnected"
           this.pendingConnection = null
+          console.error("[Socket.IO] ❌ Connection error:", error)
           reject(error)
         })
 

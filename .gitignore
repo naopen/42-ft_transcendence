@@ -206,3 +206,6 @@ sketch
 # Ignore all local history of files
 .history
 .ionide
+
+# SSL Certificates (self-signed for development)
+certs/
