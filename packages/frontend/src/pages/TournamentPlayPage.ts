@@ -73,14 +73,21 @@ export class TournamentPlayPage {
     // Header
     const header = document.createElement("div")
     header.className = "mb-8"
-    header.innerHTML = `
-      <h1 class="text-4xl font-bold mb-2 text-42-accent">${tournament.name}</h1>
-      <div class="flex items-center gap-4 text-gray-400">
-        <span>${i18n.t(`tournament.status.${tournament.status}`)}</span>
-        <span>•</span>
-        <span>${participants.length} ${i18n.t("tournament.play.players")}</span>
-      </div>
+
+    const title = document.createElement("h1")
+    title.className = "text-4xl font-bold mb-2 text-42-accent"
+    title.textContent = tournament.name // Use textContent to prevent XSS
+    header.appendChild(title)
+
+    const statusDiv = document.createElement("div")
+    statusDiv.className = "flex items-center gap-4 text-gray-400"
+    statusDiv.innerHTML = `
+      <span>${i18n.t(`tournament.status.${tournament.status}`)}</span>
+      <span>•</span>
+      <span>${participants.length} ${i18n.t("tournament.play.players")}</span>
     `
+    header.appendChild(statusDiv)
+
     this.container.appendChild(header)
 
     // Main Content Grid
@@ -150,15 +157,27 @@ export class TournamentPlayPage {
     card.className =
       "bg-gradient-to-r from-yellow-900 to-42-dark p-8 rounded-lg border border-yellow-500 text-center"
 
-    card.innerHTML = `
-      <div class="text-6xl mb-4">🏆</div>
-      <h2 class="text-3xl font-bold mb-2 text-white">
-        ${i18n.t("tournament.play.completed.title")}
-      </h2>
-      <p class="text-xl text-yellow-300 mb-6">
-        ${i18n.t("tournament.play.completed.winner")}: <span class="font-bold">${winner?.alias || "Unknown"}</span>
-      </p>
-    `
+    const trophy = document.createElement("div")
+    trophy.className = "text-6xl mb-4"
+    trophy.textContent = "🏆"
+    card.appendChild(trophy)
+
+    const title = document.createElement("h2")
+    title.className = "text-3xl font-bold mb-2 text-white"
+    title.textContent = i18n.t("tournament.play.completed.title")
+    card.appendChild(title)
+
+    const winnerText = document.createElement("p")
+    winnerText.className = "text-xl text-yellow-300 mb-6"
+    const winnerLabel = document.createTextNode(
+      `${i18n.t("tournament.play.completed.winner")}: `,
+    )
+    const winnerName = document.createElement("span")
+    winnerName.className = "font-bold"
+    winnerName.textContent = winner?.alias || "Unknown"
+    winnerText.appendChild(winnerLabel)
+    winnerText.appendChild(winnerName)
+    card.appendChild(winnerText)
 
     const homeButton = new Button({
       text: i18n.t("tournament.play.completed.homeButton"),
@@ -190,17 +209,31 @@ export class TournamentPlayPage {
     // VS Display
     const vsDisplay = document.createElement("div")
     vsDisplay.className = "grid grid-cols-3 gap-4 items-center text-center py-6"
-    vsDisplay.innerHTML = `
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <div class="text-3xl mb-2">👤</div>
-        <p class="text-xl font-bold text-white">${player1?.alias || "Unknown"}</p>
-      </div>
-      <div class="text-4xl font-bold text-42-accent">VS</div>
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <div class="text-3xl mb-2">👤</div>
-        <p class="text-xl font-bold text-white">${player2?.alias || "Unknown"}</p>
-      </div>
-    `
+
+    const player1Div = document.createElement("div")
+    player1Div.className = "bg-gray-800 p-6 rounded-lg"
+    player1Div.innerHTML = '<div class="text-3xl mb-2">👤</div>'
+    const player1Name = document.createElement("p")
+    player1Name.className = "text-xl font-bold text-white"
+    player1Name.textContent = player1?.alias || "Unknown"
+    player1Div.appendChild(player1Name)
+
+    const vsText = document.createElement("div")
+    vsText.className = "text-4xl font-bold text-42-accent"
+    vsText.textContent = "VS"
+
+    const player2Div = document.createElement("div")
+    player2Div.className = "bg-gray-800 p-6 rounded-lg"
+    player2Div.innerHTML = '<div class="text-3xl mb-2">👤</div>'
+    const player2Name = document.createElement("p")
+    player2Name.className = "text-xl font-bold text-white"
+    player2Name.textContent = player2?.alias || "Unknown"
+    player2Div.appendChild(player2Name)
+
+    vsDisplay.appendChild(player1Div)
+    vsDisplay.appendChild(vsText)
+    vsDisplay.appendChild(player2Div)
+
     content.appendChild(vsDisplay)
 
     // Play Button
@@ -285,16 +318,35 @@ export class TournamentPlayPage {
     const isWinner1 = match.winner_id === match.participant1_id
     const isWinner2 = match.winner_id === match.participant2_id
 
-    div.innerHTML = `
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-sm ${isWinner1 ? "text-green-400 font-bold" : "text-gray-400"}">${player1?.alias || "TBD"}</span>
-        ${isWinner1 ? '<span class="text-green-400">✓</span>' : ""}
-      </div>
-      <div class="flex items-center justify-between">
-        <span class="text-sm ${isWinner2 ? "text-green-400 font-bold" : "text-gray-400"}">${player2?.alias || "TBD"}</span>
-        ${isWinner2 ? '<span class="text-green-400">✓</span>' : ""}
-      </div>
-    `
+    // Player 1 row
+    const player1Row = document.createElement("div")
+    player1Row.className = "flex items-center justify-between mb-2"
+    const player1Name = document.createElement("span")
+    player1Name.className = `text-sm ${isWinner1 ? "text-green-400 font-bold" : "text-gray-400"}`
+    player1Name.textContent = player1?.alias || "TBD"
+    player1Row.appendChild(player1Name)
+    if (isWinner1) {
+      const checkmark = document.createElement("span")
+      checkmark.className = "text-green-400"
+      checkmark.textContent = "✓"
+      player1Row.appendChild(checkmark)
+    }
+    div.appendChild(player1Row)
+
+    // Player 2 row
+    const player2Row = document.createElement("div")
+    player2Row.className = "flex items-center justify-between"
+    const player2Name = document.createElement("span")
+    player2Name.className = `text-sm ${isWinner2 ? "text-green-400 font-bold" : "text-gray-400"}`
+    player2Name.textContent = player2?.alias || "TBD"
+    player2Row.appendChild(player2Name)
+    if (isWinner2) {
+      const checkmark = document.createElement("span")
+      checkmark.className = "text-green-400"
+      checkmark.textContent = "✓"
+      player2Row.appendChild(checkmark)
+    }
+    div.appendChild(player2Row)
 
     return div
   }
@@ -316,13 +368,22 @@ export class TournamentPlayPage {
         participant.eliminated_at ? "bg-gray-800 opacity-50" : "bg-gray-800"
       }`
 
-      div.innerHTML = `
-        <span class="font-medium ${participant.eliminated_at ? "line-through text-gray-500" : "text-white"}">
-          ${participant.alias}
-        </span>
-        ${participant.position === 1 ? '<span class="text-2xl">🏆</span>' : ""}
-        ${participant.eliminated_at && participant.position !== 1 ? '<span class="text-red-500">✕</span>' : ""}
-      `
+      const aliasSpan = document.createElement("span")
+      aliasSpan.className = `font-medium ${participant.eliminated_at ? "line-through text-gray-500" : "text-white"}`
+      aliasSpan.textContent = participant.alias
+      div.appendChild(aliasSpan)
+
+      if (participant.position === 1) {
+        const trophy = document.createElement("span")
+        trophy.className = "text-2xl"
+        trophy.textContent = "🏆"
+        div.appendChild(trophy)
+      } else if (participant.eliminated_at) {
+        const cross = document.createElement("span")
+        cross.className = "text-red-500"
+        cross.textContent = "✕"
+        div.appendChild(cross)
+      }
 
       content.appendChild(div)
     })

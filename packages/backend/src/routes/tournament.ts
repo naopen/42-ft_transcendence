@@ -11,8 +11,24 @@ import { tournamentService } from "../services/tournament.service"
 
 // Validation schemas
 const createTournamentSchema = z.object({
-  name: z.string().min(3).max(50),
-  aliases: z.array(z.string().min(2).max(20)).min(3).max(16),
+  name: z
+    .string()
+    .min(3)
+    .max(50)
+    .regex(
+      /^[a-zA-Z0-9\s\-_!?.']+$/,
+      "Tournament name contains invalid characters",
+    ),
+  aliases: z
+    .array(
+      z
+        .string()
+        .min(2)
+        .max(20)
+        .regex(/^[a-zA-Z0-9\s\-_!?.']+$/, "Alias contains invalid characters"),
+    )
+    .min(3)
+    .max(16),
 })
 
 const completeMatchSchema = z.object({
