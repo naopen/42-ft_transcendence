@@ -49,16 +49,28 @@ async function start() {
     fastify.setErrorHandler(errorHandler)
 
     // Register plugins
+    // CORS configuration: Allow both production and development origins for cross-environment testing
+    const allowedOrigins =
+      process.env.NODE_ENV === "production"
+        ? [
+            process.env.FRONTEND_URL ||
+              "https://your-frontend-url.onrender.com",
+            // Allow localhost for development/testing (can be disabled in production if not needed)
+            "https://localhost:8443",
+            "http://localhost:8080",
+          ]
+        : [
+            "https://localhost:8443",
+            "https://localhost:5173",
+            "http://localhost:8080",
+            "http://localhost:5173",
+            // Allow production URLs for testing
+            process.env.FRONTEND_URL ||
+              "https://your-frontend-url.onrender.com",
+          ]
+
     await fastify.register(cors, {
-      origin:
-        process.env.NODE_ENV === "production"
-          ? process.env.FRONTEND_URL || "https://your-frontend-url.onrender.com"
-          : [
-              "https://localhost:8443",
-              "https://localhost:5173",
-              "http://localhost:8080",
-              "http://localhost:5173",
-            ],
+      origin: allowedOrigins.filter(Boolean), // Remove undefined values
       credentials: true,
     })
 
@@ -88,19 +100,10 @@ async function start() {
       rolling: true, // Reset expiration on every response
     })
 
-    // Register Socket.IO
+    // Register Socket.IO with the same CORS configuration
     await fastify.register(fastifySocketIO, {
       cors: {
-        origin:
-          process.env.NODE_ENV === "production"
-            ? process.env.FRONTEND_URL ||
-              "https://your-frontend-url.onrender.com"
-            : [
-                "https://localhost:8443",
-                "https://localhost:5173",
-                "http://localhost:8080",
-                "http://localhost:5173",
-              ],
+        origin: allowedOrigins.filter(Boolean),
         credentials: true,
       },
       transports: ["websocket", "polling"],
