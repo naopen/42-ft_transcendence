@@ -2,6 +2,7 @@ import { Alert } from "../components/Alert"
 import { Button } from "../components/Button"
 import { Card } from "../components/Card"
 import { i18n } from "../i18n"
+import { authService } from "../services/auth.service"
 import { socketService } from "../services/socket.service"
 import { authStore } from "../stores/auth.store"
 
@@ -42,10 +43,18 @@ export class OnlinePlayPage {
       return
     }
 
-    // Connect to Socket.IO
+    // Connect to Socket.IO with JWT authentication
     try {
       if (!socketService.isConnected()) {
-        socketService.connect(authState.user.id, authState.user.displayName)
+        // SECURITY: Get JWT token for authentication
+        const token = authService.getToken()
+        if (!token) {
+          Alert.error("Authentication token not found. Please log in again.")
+          this.renderSignInRequired()
+          return
+        }
+
+        await socketService.connect(token)
       }
 
       this.setupSocketListeners()

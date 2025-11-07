@@ -73,9 +73,15 @@ export class SocketService {
   private pendingConnection: Promise<void> | null = null
 
   /**
-   * Connect to Socket.IO server
+   * Connect to Socket.IO server with JWT authentication
    */
-  connect(userId: number, userName: string): Promise<void> {
+  connect(token: string | null): Promise<void> {
+    // CRITICAL: Require valid JWT token for authentication
+    if (!token) {
+      console.error("[Socket.IO] Cannot connect without authentication token")
+      return Promise.reject(new Error("Authentication token required"))
+    }
+
     // CRITICAL: Check connection state to prevent multiple connections
     if (this.connectionState === "connected" && this.socket?.connected) {
       console.log("[Socket.IO] Already connected")
@@ -113,8 +119,8 @@ export class SocketService {
       try {
         this.socket = io(apiUrl, {
           auth: {
-            userId,
-            userName,
+            // SECURITY: Send JWT token for server-side verification
+            token,
           },
           // CRITICAL: Force WebSocket transport to ensure WSS is used
           transports: ["websocket", "polling"],

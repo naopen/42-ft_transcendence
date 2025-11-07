@@ -2,6 +2,7 @@ import { Button } from "../components/Button"
 import { Modal } from "../components/Modal"
 import { PongEngine } from "../game/PongEngine"
 import { i18n } from "../i18n"
+import { authService } from "../services/auth.service"
 import { socketService } from "../services/socket.service"
 import { authStore } from "../stores/auth.store"
 import { getOptimalCanvasSize, isMobileDevice } from "../utils/mobile"
@@ -84,16 +85,20 @@ export class OnlineGamePage {
     }
 
     // Setup Socket.IO connection
-    this.setupSocketConnection(authState.user.id, authState.user.displayName)
+    this.setupSocketConnection()
   }
 
-  private async setupSocketConnection(
-    userId: number,
-    userName: string,
-  ): Promise<void> {
+  private async setupSocketConnection(): Promise<void> {
     try {
-      // CRITICAL: Use promise-based connection with state machine
-      await socketService.connect(userId, userName)
+      // SECURITY: Get JWT token for authentication
+      const token = authService.getToken()
+      if (!token) {
+        this.showError("Authentication token not found. Please log in again.")
+        return
+      }
+
+      // CRITICAL: Use promise-based connection with JWT authentication
+      await socketService.connect(token)
 
       console.log("[OnlineGamePage] Connected to server, sending ready signal")
 

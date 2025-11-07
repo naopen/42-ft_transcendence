@@ -145,27 +145,74 @@ async function start() {
     const matchmakingService = new MatchmakingService(io)
 
     // Socket.IO connection handler
-    io.on("connection", (socket: TypedSocket) => {
+    io.on("connection", async (socket: TypedSocket) => {
       console.log(`[Socket.IO] Client connected: ${socket.id}`)
 
-      // Get session data from handshake
-      const sessionData = socket.handshake.auth
+      // Verify authentication using JWT or session
+      let userId: number | undefined
+      let userName: string | undefined
 
-      if (!sessionData.userId || !sessionData.userName) {
+      // Try JWT authentication first
+      const token = socket.handshake.auth.token
+      if (token) {
+        try {
+          const decoded = fastify.jwt.verify<{
+            userId: number
+            displayName: string
+          }>(token)
+          userId = decoded.userId
+          userName = decoded.displayName
+          console.log(`[Socket.IO] JWT authenticated: ${userName} (${userId})`)
+        } catch (error) {
+          console.log(
+            `[Socket.IO] Invalid JWT token from ${socket.id}: ${error}`,
+          )
+        }
+      }
+
+      // If JWT auth failed, try session-based auth using cookies
+      if (!userId) {
+        const cookies = socket.handshake.headers.cookie
+        if (cookies) {
+          // Parse session from cookies
+          // Note: This is a simplified approach. In production, you should properly
+          // decrypt and validate the session cookie using the same session middleware
+          try {
+            // Get session ID from cookie
+            const sessionCookie = cookies
+              .split(";")
+              .find((c) => c.trim().startsWith("sessionId="))
+            if (sessionCookie) {
+              // For now, we reject connections without valid JWT tokens
+              // This ensures proper authentication verification
+              console.log(
+                `[Socket.IO] Session cookie found but JWT required for WebSocket connections`,
+              )
+            }
+          } catch (error) {
+            console.log(`[Socket.IO] Error parsing session cookie: ${error}`)
+          }
+        }
+      }
+
+      // Reject unauthenticated connections
+      if (!userId || !userName) {
         console.log(
-          `[Socket.IO] Unauthenticated connection attempt: ${socket.id}`,
+          `[Socket.IO] Unauthenticated connection attempt rejected: ${socket.id}`,
         )
-        socket.emit("error", { message: "Authentication required" })
+        socket.emit("error", {
+          message: "Authentication required. Please provide a valid JWT token.",
+        })
         socket.disconnect()
         return
       }
 
-      // Store user data in socket
-      socket.data.userId = sessionData.userId
-      socket.data.userName = sessionData.userName
+      // Store verified user data in socket
+      socket.data.userId = userId
+      socket.data.userName = userName
 
       console.log(
-        `[Socket.IO] Authenticated: ${sessionData.userName} (${sessionData.userId})`,
+        `[Socket.IO] Authenticated connection: ${userName} (${userId})`,
       )
 
       // Emit connected event
