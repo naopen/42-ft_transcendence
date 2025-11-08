@@ -262,18 +262,20 @@ export class PongEngine {
       this.paddle1.position.x += deltaX
     }
 
-    // Player 2 controls (Arrow Left/Right or mobile buttons)
+    // Player 2 controls (Arrow keys or mobile buttons)
+    // Arrow keys are inverted because Player 2 faces the opposite direction
+    // Mobile buttons: leftPressed means Player 2's left (screen right), rightPressed means Player 2's right (screen left)
     if (
-      (this.keys["arrowleft"] || this.mobileButtonState.leftPressed) &&
-      this.paddle2.position.x > -maxX
-    ) {
-      this.paddle2.position.x -= deltaX
-    }
-    if (
-      (this.keys["arrowright"] || this.mobileButtonState.rightPressed) &&
+      (this.keys["arrowleft"] || this.mobileButtonState.rightPressed) &&
       this.paddle2.position.x < maxX
     ) {
-      this.paddle2.position.x += deltaX
+      this.paddle2.position.x += deltaX // Move to screen right (Player 2's left)
+    }
+    if (
+      (this.keys["arrowright"] || this.mobileButtonState.leftPressed) &&
+      this.paddle2.position.x > -maxX
+    ) {
+      this.paddle2.position.x -= deltaX // Move to screen left (Player 2's right)
     }
   }
 
@@ -438,17 +440,34 @@ export class PongEngine {
     const leftKey = this.isPlayer1 ? "a" : "arrowleft"
     const rightKey = this.isPlayer1 ? "d" : "arrowright"
 
-    if (
-      (this.keys[leftKey] || this.mobileButtonState.leftPressed) &&
-      myPaddle.position.x > -maxX
-    ) {
-      myPaddle.position.x -= deltaX
-    }
-    if (
-      (this.keys[rightKey] || this.mobileButtonState.rightPressed) &&
-      myPaddle.position.x < maxX
-    ) {
-      myPaddle.position.x += deltaX
+    if (this.isPlayer1) {
+      // Player 1: normal controls
+      if (
+        (this.keys[leftKey] || this.mobileButtonState.leftPressed) &&
+        myPaddle.position.x > -maxX
+      ) {
+        myPaddle.position.x -= deltaX
+      }
+      if (
+        (this.keys[rightKey] || this.mobileButtonState.rightPressed) &&
+        myPaddle.position.x < maxX
+      ) {
+        myPaddle.position.x += deltaX
+      }
+    } else {
+      // Player 2: inverted keyboard controls, mobile buttons already correct
+      if (
+        (this.keys[leftKey] || this.mobileButtonState.rightPressed) &&
+        myPaddle.position.x < maxX
+      ) {
+        myPaddle.position.x += deltaX
+      }
+      if (
+        (this.keys[rightKey] || this.mobileButtonState.leftPressed) &&
+        myPaddle.position.x > -maxX
+      ) {
+        myPaddle.position.x -= deltaX
+      }
     }
   }
 
