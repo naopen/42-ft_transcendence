@@ -65,9 +65,9 @@ export class PongEngine {
   private readonly PADDLE_SPEED = 0.5
   private readonly FIELD_WIDTH = 20
   private readonly FIELD_LENGTH = 30
-  private readonly PADDLE_HEIGHT = 4
-  private readonly PADDLE_WIDTH = 0.5
-  private readonly PADDLE_DEPTH = 1
+  private readonly PADDLE_WIDTH = 4 // Paddle width (horizontal length)
+  private readonly PADDLE_HEIGHT = 0.5 // Paddle height (thin, flat)
+  private readonly PADDLE_DEPTH = 1 // Paddle depth
 
   // Input state
   private keys: Record<string, boolean> = {}
@@ -156,9 +156,9 @@ export class PongEngine {
     const paddle = MeshBuilder.CreateBox(
       `paddle${player}`,
       {
-        height: this.PADDLE_HEIGHT,
-        width: this.PADDLE_WIDTH,
-        depth: this.PADDLE_DEPTH,
+        width: this.PADDLE_WIDTH, // X-axis (horizontal width)
+        height: this.PADDLE_HEIGHT, // Y-axis (thin height)
+        depth: this.PADDLE_DEPTH, // Z-axis (depth)
       },
       this.scene,
     )
@@ -170,7 +170,7 @@ export class PongEngine {
       player === 1 ? new Color3(0, 0.2, 0.2) : new Color3(0.2, 0, 0)
     paddle.material = material
 
-    // Position paddles at opposite ends
+    // Position paddles at opposite ends (flat on the ground)
     const zPosition =
       player === 1 ? -this.FIELD_LENGTH / 2 + 2 : this.FIELD_LENGTH / 2 - 2
     paddle.position = new Vector3(0, this.PADDLE_HEIGHT / 2, zPosition)
@@ -312,13 +312,13 @@ export class PongEngine {
     const paddle1X = this.paddle1.position.x
     if (
       Math.abs(ballZ - paddle1Z) < 1 &&
-      Math.abs(ballX - paddle1X) < this.PADDLE_HEIGHT / 2
+      Math.abs(ballX - paddle1X) < this.PADDLE_WIDTH / 2
     ) {
       this.ballVelocity.z *= -1.05 // Increase speed slightly
       this.ball.position.z = paddle1Z + 1
 
       // Add horizontal spin based on where ball hits paddle
-      const hitOffset = (ballX - paddle1X) / (this.PADDLE_HEIGHT / 2)
+      const hitOffset = (ballX - paddle1X) / (this.PADDLE_WIDTH / 2)
       this.ballVelocity.x = hitOffset * this.BALL_SPEED * 0.5
     }
 
@@ -327,12 +327,12 @@ export class PongEngine {
     const paddle2X = this.paddle2.position.x
     if (
       Math.abs(ballZ - paddle2Z) < 1 &&
-      Math.abs(ballX - paddle2X) < this.PADDLE_HEIGHT / 2
+      Math.abs(ballX - paddle2X) < this.PADDLE_WIDTH / 2
     ) {
       this.ballVelocity.z *= -1.05
       this.ball.position.z = paddle2Z - 1
 
-      const hitOffset = (ballX - paddle2X) / (this.PADDLE_HEIGHT / 2)
+      const hitOffset = (ballX - paddle2X) / (this.PADDLE_WIDTH / 2)
       this.ballVelocity.x = hitOffset * this.BALL_SPEED * 0.5
     }
   }
